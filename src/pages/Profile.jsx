@@ -243,6 +243,22 @@ export default function Profile() {
           <ProfileRow label="Estructura" value={activePlan.plan_json?.weekly_structure || '—'} />
           <ProfileRow label="Semana actual" value={`${activePlan.current_week} de ${activePlan.plan_json?.total_weeks}`} />
           <ProfileRow label="Inicio" value={activePlan.start_date ? new Date(activePlan.start_date + 'T00:00:00').toLocaleDateString('es') : '—'} />
+          {activePlan.plan_json?.coach_rationale && (
+            <div style={{
+              marginTop: '4px',
+              padding: '10px 12px',
+              background: 'var(--color-accent-dim)',
+              borderRadius: 'var(--radius-md)',
+              borderLeft: '3px solid var(--color-accent)',
+            }}>
+              <p style={{ fontSize: '11px', fontFamily: 'var(--font-display)', color: 'var(--color-accent)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Razonamiento del Coach
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: '1.5' }}>
+                {activePlan.plan_json.coach_rationale}
+              </p>
+            </div>
+          )}
           <div style={{ marginTop: '16px' }}>
             <Button
               variant="secondary"

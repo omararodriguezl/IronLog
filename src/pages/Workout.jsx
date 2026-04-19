@@ -113,11 +113,16 @@ export default function Workout() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ fontSize: '11px', fontFamily: 'var(--font-display)', color: 'var(--color-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>
-              Semana {activePlan.current_week} · {weekData?.is_deload ? 'DELOAD' : weekData?.theme?.split('—')[0]}
+              Semana {activePlan.current_week}/{activePlan.plan_json?.total_weeks} · {weekData?.is_deload ? '🔄 DELOAD' : weekData?.theme}
             </p>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: '700' }}>
               {currentDay?.day_label || 'Sin sesión hoy'}
             </h1>
+            {weekData?.progression_note && (
+              <p style={{ fontSize: '12px', color: 'var(--color-accent)', marginTop: '3px' }}>
+                📈 {weekData.progression_note}
+              </p>
+            )}
           </div>
           <button
             onClick={() => setUseKg(k => !k)}

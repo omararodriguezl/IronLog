@@ -49,62 +49,60 @@ export async function generateWorkoutPlan({ goal, days, level, equipment, injuri
     advanced: 'Avanzado (3+ años)',
   }
 
-  const goalConfig = {
-    volume:      { weeks: 4, rest: 75,  duration: 80, structure: 'PPL',         focus: 'hipertrofia, series altas (10-15 reps), descansos cortos' },
-    strength:    { weeks: 4, rest: 180, duration: 75, structure: 'Upper/Lower',  focus: 'fuerza máxima, series bajas (3-6 reps), descansos largos' },
-    cut:         { weeks: 4, rest: 60,  duration: 60, structure: 'Full Body',    focus: 'mantener músculo en déficit, circuitos, descansos cortos' },
-    maintenance: { weeks: 4, rest: 90,  duration: 60, structure: 'Full Body',    focus: 'mantenimiento general, reps moderadas (8-12)' },
-  }
-  const cfg = goalConfig[goal] || goalConfig.maintenance
-  const totalWeeks = cfg.weeks
+  const system = `You are a world-class strength and conditioning coach with deep knowledge of periodization science. Respond with valid JSON only, no markdown, no extra text.`
 
-  const system = `You are an expert strength coach. Respond with valid JSON only, no markdown, no extra text.`
+  const userMessage = `Design the optimal workout program for this athlete. You decide everything based on exercise science.
 
-  const userMessage = `Create a ${totalWeeks}-week workout plan focused on: ${cfg.focus}
-
-User profile:
+Athlete profile:
 - Goal: ${goalMap[goal] || goal}
-- Days/week: ${days}
-- Level: ${levelMap[level] || level}
+- Training days/week: ${days}
+- Experience level: ${levelMap[level] || level}
 - Equipment: ${equipmentMap[equipment] || equipment}
-- Limitations: ${injuries || 'None'}
+- Physical limitations: ${injuries || 'None'}
+
+YOUR DECISIONS (apply real periodization science):
+1. Total weeks — optimal block length for this goal and level (typically 4-12 weeks)
+2. Weekly structure — best split for the goal and days available (PPL, Upper/Lower, Full Body, etc.)
+3. Deload placement — insert is_deload:true weeks where scientifically appropriate (not always every 4th week)
+4. Session duration and rest periods — based on goal energy systems
+5. Exercise selection — best exercises for the goal and equipment
+6. Sets/reps — must match the goal (strength=1-5 reps, hypertrophy=6-15, endurance=15+)
+7. Progression — realistic week-to-week progression in progression_note
 
 RULES:
-- Exercises defined ONCE in "days" array, reused every week
-- Each week only changes theme and progression_note
-- Week ${totalWeeks} is always deload (reduce volume 40%)
-- Max 5 exercises per day, chosen for the goal
-- Sets/reps must match the goal focus
-- All text in Spanish, tips max 6 words
+- Exercises defined ONCE in the "days" array (reused every week, only notes change per week)
+- Max 5 exercises per day
+- All text in Spanish
+- Tips max 6 words
+- total_weeks must be between 4 and 10
 
-Return ONLY this JSON:
+Return ONLY this JSON structure:
 {
   "goal": "${goal}",
-  "total_weeks": ${totalWeeks},
-  "session_duration_minutes": ${cfg.duration},
-  "rest_between_sets_seconds": ${cfg.rest},
-  "weekly_structure": "${cfg.structure}",
+  "total_weeks": 8,
+  "session_duration_minutes": 75,
+  "rest_between_sets_seconds": 90,
+  "weekly_structure": "PPL",
+  "coach_rationale": "Breve justificación del programa en español (1-2 frases)",
   "days": [
     {
-      "day_label": "Día A – Empuje",
+      "day_label": "Día A – Empuje (Pecho / Hombros / Tríceps)",
       "exercises": [
         {
           "id": "press_banca",
           "name": "Press de Banca",
           "muscle_group": "Chest",
           "sets": 4,
-          "reps": "10-12",
-          "rest_seconds": ${cfg.rest},
+          "reps": "8-10",
+          "rest_seconds": 90,
           "tip": "Retrae escápulas, arco natural"
         }
       ]
     }
   ],
   "weeks": [
-    { "week_number": 1, "theme": "Semana de base", "is_deload": false, "progression_note": "Establece pesos de referencia" },
-    { "week_number": 2, "theme": "Semana de carga", "is_deload": false, "progression_note": "+2.5kg en ejercicios principales" },
-    { "week_number": 3, "theme": "Semana de intensidad", "is_deload": false, "progression_note": "Lleva las series al fallo técnico" },
-    { "week_number": 4, "theme": "Semana de descarga", "is_deload": true, "progression_note": "Baja volumen 40%, recupera" }
+    { "week_number": 1, "theme": "Adaptación neurológica", "is_deload": false, "progression_note": "Establece pesos de referencia al 70% RM" },
+    { "week_number": 2, "theme": "Carga progresiva", "is_deload": false, "progression_note": "+2.5kg en ejercicios compuestos" }
   ]
 }`
 
