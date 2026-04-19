@@ -3,7 +3,6 @@
 -- Run this in your Supabase SQL editor
 -- ============================================================
 
--- Enable UUID extension (usually already enabled)
 create extension if not exists "pgcrypto";
 
 -- ============================================================
@@ -88,7 +87,16 @@ alter table workout_sessions enable row level security;
 alter table food_log enable row level security;
 alter table cardio_calendar enable row level security;
 
--- Profiles: users can only read/write their own
+-- Drop existing policies to avoid conflicts
+drop policy if exists "Users can view own profile" on profiles;
+drop policy if exists "Users can insert own profile" on profiles;
+drop policy if exists "Users can update own profile" on profiles;
+drop policy if exists "Users can manage own workout plans" on workout_plans;
+drop policy if exists "Users can manage own workout sessions" on workout_sessions;
+drop policy if exists "Users can manage own food log" on food_log;
+drop policy if exists "Users can manage own cardio calendar" on cardio_calendar;
+
+-- Recreate policies
 create policy "Users can view own profile"
   on profiles for select using (auth.uid() = id);
 
@@ -98,19 +106,15 @@ create policy "Users can insert own profile"
 create policy "Users can update own profile"
   on profiles for update using (auth.uid() = id);
 
--- Workout plans
 create policy "Users can manage own workout plans"
   on workout_plans for all using (auth.uid() = user_id);
 
--- Workout sessions
 create policy "Users can manage own workout sessions"
   on workout_sessions for all using (auth.uid() = user_id);
 
--- Food log
 create policy "Users can manage own food log"
   on food_log for all using (auth.uid() = user_id);
 
--- Cardio calendar
 create policy "Users can manage own cardio calendar"
   on cardio_calendar for all using (auth.uid() = user_id);
 
