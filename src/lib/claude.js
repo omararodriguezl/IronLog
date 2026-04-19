@@ -49,33 +49,41 @@ export async function generateWorkoutPlan({ goal, days, level, equipment, injuri
     advanced: 'Avanzado (3+ años)',
   }
 
-  const totalWeeks = 4
+  const goalConfig = {
+    volume:      { weeks: 4, rest: 75,  duration: 80, structure: 'PPL',         focus: 'hipertrofia, series altas (10-15 reps), descansos cortos' },
+    strength:    { weeks: 4, rest: 180, duration: 75, structure: 'Upper/Lower',  focus: 'fuerza máxima, series bajas (3-6 reps), descansos largos' },
+    cut:         { weeks: 4, rest: 60,  duration: 60, structure: 'Full Body',    focus: 'mantener músculo en déficit, circuitos, descansos cortos' },
+    maintenance: { weeks: 4, rest: 90,  duration: 60, structure: 'Full Body',    focus: 'mantenimiento general, reps moderadas (8-12)' },
+  }
+  const cfg = goalConfig[goal] || goalConfig.maintenance
+  const totalWeeks = cfg.weeks
+
   const system = `You are an expert strength coach. Respond with valid JSON only, no markdown, no extra text.`
 
-  const userMessage = `Create a ${totalWeeks}-week workout plan. The exercises are the SAME every week — only sets/reps change for progression.
+  const userMessage = `Create a ${totalWeeks}-week workout plan focused on: ${cfg.focus}
 
-User:
+User profile:
 - Goal: ${goalMap[goal] || goal}
 - Days/week: ${days}
 - Level: ${levelMap[level] || level}
 - Equipment: ${equipmentMap[equipment] || equipment}
 - Limitations: ${injuries || 'None'}
 
-IMPORTANT:
-- "days" array is defined ONCE (week 1 template, reused all weeks)
-- Each week only has: week_number, theme, is_deload, progression_note
-- Week ${totalWeeks} is deload
-- Max 5 exercises per day
-- All Spanish text
-- Tips max 6 words
+RULES:
+- Exercises defined ONCE in "days" array, reused every week
+- Each week only changes theme and progression_note
+- Week ${totalWeeks} is always deload (reduce volume 40%)
+- Max 5 exercises per day, chosen for the goal
+- Sets/reps must match the goal focus
+- All text in Spanish, tips max 6 words
 
 Return ONLY this JSON:
 {
   "goal": "${goal}",
   "total_weeks": ${totalWeeks},
-  "session_duration_minutes": 70,
-  "rest_between_sets_seconds": 90,
-  "weekly_structure": "Full Body",
+  "session_duration_minutes": ${cfg.duration},
+  "rest_between_sets_seconds": ${cfg.rest},
+  "weekly_structure": "${cfg.structure}",
   "days": [
     {
       "day_label": "Día A – Empuje",
@@ -85,18 +93,18 @@ Return ONLY this JSON:
           "name": "Press de Banca",
           "muscle_group": "Chest",
           "sets": 4,
-          "reps": "8-10",
-          "rest_seconds": 90,
+          "reps": "10-12",
+          "rest_seconds": ${cfg.rest},
           "tip": "Retrae escápulas, arco natural"
         }
       ]
     }
   ],
   "weeks": [
-    { "week_number": 1, "theme": "Semana de base", "is_deload": false, "progression_note": "Establece tus pesos de referencia" },
+    { "week_number": 1, "theme": "Semana de base", "is_deload": false, "progression_note": "Establece pesos de referencia" },
     { "week_number": 2, "theme": "Semana de carga", "is_deload": false, "progression_note": "+2.5kg en ejercicios principales" },
-    { "week_number": 3, "theme": "Semana de intensidad", "is_deload": false, "progression_note": "+2.5kg, reduce 1 rep por serie" },
-    { "week_number": 4, "theme": "Semana de descarga", "is_deload": true, "progression_note": "Reduce peso 40%, mismas series" }
+    { "week_number": 3, "theme": "Semana de intensidad", "is_deload": false, "progression_note": "Lleva las series al fallo técnico" },
+    { "week_number": 4, "theme": "Semana de descarga", "is_deload": true, "progression_note": "Baja volumen 40%, recupera" }
   ]
 }`
 
