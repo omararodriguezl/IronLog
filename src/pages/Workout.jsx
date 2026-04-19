@@ -293,6 +293,9 @@ export default function Workout() {
         </div>
       )}
 
+      {/* Full plan section */}
+      <FullPlanSection plan={activePlan} sessions={sessions} />
+
       {/* History section */}
       <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '20px' }}>
         <button
@@ -336,6 +339,110 @@ export default function Workout() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function FullPlanSection({ plan, sessions }) {
+  const [open, setOpen] = useState(false)
+  const [openWeek, setOpenWeek] = useState(null)
+
+  if (!plan?.plan_json?.weeks) return null
+
+  const weeks = plan.plan_json.weeks
+  const days = plan.plan_json.days || []
+
+  const completedWeeks = new Set(
+    sessions.map(s => s.week_number)
+  )
+
+  return (
+    <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '20px', marginBottom: '8px' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', marginBottom: open ? '16px' : 0 }}
+      >
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', color: 'var(--color-text)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          Plan completo
+        </span>
+        <span style={{ fontSize: '18px', color: 'var(--color-text-muted)', transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }}>↓</span>
+      </button>
+
+      {open && (
+        <div style={{ animation: 'fadeIn 0.2s ease' }}>
+          {weeks.map(week => {
+            const isCurrentWeek = week.week_number === plan.current_week
+            const isDone = completedWeeks.has(week.week_number) && !isCurrentWeek
+            const isExpanded = openWeek === week.week_number
+
+            return (
+              <div key={week.week_number} style={{ marginBottom: '8px' }}>
+                <button
+                  onClick={() => setOpenWeek(w => w === week.week_number ? null : week.week_number)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: isCurrentWeek ? 'var(--color-accent-dim)' : 'var(--color-surface)',
+                    border: `1px solid ${isCurrentWeek ? 'var(--color-accent)' : isDone ? 'var(--color-border)' : 'var(--color-border)'}`,
+                    borderRadius: isExpanded ? 'var(--radius-md) var(--radius-md) 0 0' : 'var(--radius-md)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: '700', color: isCurrentWeek ? 'var(--color-accent)' : isDone ? 'var(--color-text-dim)' : 'var(--color-text)' }}>
+                        {isDone ? '✓ ' : isCurrentWeek ? '▶ ' : ''}Semana {week.week_number}
+                      </span>
+                      {week.is_deload && (
+                        <span style={{ fontSize: '10px', fontFamily: 'var(--font-display)', fontWeight: '700', color: 'var(--color-warning)', background: '#d2992222', padding: '1px 6px', borderRadius: 'var(--radius-full)', border: '1px solid var(--color-warning)' }}>
+                          DELOAD
+                        </span>
+                      )}
+                      {isCurrentWeek && (
+                        <span style={{ fontSize: '10px', fontFamily: 'var(--font-display)', fontWeight: '700', color: 'var(--color-accent)', background: 'var(--color-accent-dim)', padding: '1px 6px', borderRadius: 'var(--radius-full)', border: '1px solid var(--color-accent)' }}>
+                          ACTUAL
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', textAlign: 'left' }}>{week.theme}</p>
+                  </div>
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-dim)' }}>{isExpanded ? '▲' : '▼'}</span>
+                </button>
+
+                {isExpanded && (
+                  <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderTop: 'none', borderRadius: '0 0 var(--radius-md) var(--radius-md)', padding: '12px 14px' }}>
+                    {week.progression_note && (
+                      <p style={{ fontSize: '12px', color: 'var(--color-accent)', marginBottom: '12px', fontFamily: 'var(--font-body)' }}>
+                        📈 {week.progression_note}
+                      </p>
+                    )}
+                    {days.map((day, di) => (
+                      <div key={di} style={{ marginBottom: '12px' }}>
+                        <p style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: '700', color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                          {day.day_label}
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {(day.exercises || []).map((ex, ei) => (
+                            <div key={ei} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--color-surface-hover)', borderRadius: 'var(--radius-sm)' }}>
+                              <span style={{ fontSize: '13px', color: 'var(--color-text)' }}>{ex.name}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)', flexShrink: 0, marginLeft: '8px' }}>
+                                {ex.sets}×{ex.reps}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
