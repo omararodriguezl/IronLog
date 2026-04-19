@@ -12,8 +12,9 @@ import { useToast } from '../components/ui/Toast'
 
 export default function Nutrition() {
   const { profile } = useAuth()
-  const today = new Date().toISOString().split('T')[0]
-  const { entries, loading, addEntry, deleteEntry, getTotals, goals, updateGoals } = useNutrition(profile?.id, today)
+  const todayStr = new Date().toISOString().split('T')[0]
+  const [selectedDate, setSelectedDate] = useState(todayStr)
+  const { entries, loading, addEntry, deleteEntry, getTotals, goals, updateGoals } = useNutrition(profile?.id, selectedDate)
   const toast = useToast()
 
   const [modal, setModal] = useState(null) // null | 'method' | 'photo' | 'barcode' | 'manual' | 'goals'
@@ -21,6 +22,15 @@ export default function Nutrition() {
   const [manualForm, setManualForm] = useState({ meal_name: '', calories: '', protein_g: '', carbs_g: '', fat_g: '' })
   const [errors, setErrors] = useState({})
   const [goalsForm, setGoalsForm] = useState(null)
+
+  function shiftDate(days) {
+    const d = new Date(selectedDate + 'T00:00:00')
+    d.setDate(d.getDate() + days)
+    const s = d.toISOString().split('T')[0]
+    if (s <= todayStr) setSelectedDate(s)
+  }
+
+  const isToday = selectedDate === todayStr
 
   async function handleAdd(entry) {
     setSaving(true)
@@ -70,21 +80,27 @@ export default function Nutrition() {
 
   return (
     <div style={{ padding: '0 16px 16px', animation: 'fadeIn 0.2s ease' }}>
-      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>
-            Nutrición
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-            {new Date(today + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>Nutrición</h1>
+          <button
+            onClick={() => { setGoalsForm({ ...goals }); setModal('goals') }}
+            style={{ fontSize: '12px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em', paddingTop: '6px' }}
+          >
+            METAS →
+          </button>
         </div>
-        <button
-          onClick={() => { setGoalsForm({ ...goals }); setModal('goals') }}
-          style={{ fontSize: '12px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em', paddingBottom: '2px' }}
-        >
-          METAS →
-        </button>
+        {/* Date navigator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+          <button onClick={() => shiftDate(-1)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '30px', height: '30px', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+          <span style={{ flex: 1, textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'var(--font-display)', textTransform: 'capitalize' }}>
+            {isToday ? 'Hoy' : new Date(selectedDate + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'short' })}
+          </span>
+          <button onClick={() => shiftDate(1)} disabled={isToday} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '30px', height: '30px', color: isToday ? 'var(--color-border)' : 'var(--color-text-muted)', cursor: isToday ? 'default' : 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
+          {!isToday && (
+            <button onClick={() => setSelectedDate(todayStr)} style={{ fontSize: '11px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>HOY</button>
+          )}
+        </div>
       </div>
 
       <MacroSummary totals={totals} goals={goals} />
@@ -110,31 +126,33 @@ export default function Nutrition() {
         <FoodEntry key={entry.id} entry={entry} onDelete={handleDelete} />
       ))}
 
-      <button
-        onClick={() => setModal('method')}
-        style={{
-          position: 'fixed',
-          bottom: 'calc(var(--nav-height) + var(--safe-bottom) + 16px)',
-          right: '16px',
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          background: 'var(--color-accent)',
-          color: '#0d1117',
-          fontSize: '28px',
-          fontWeight: '300',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(57,211,83,0.4)',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 50,
-          lineHeight: 1,
-        }}
-      >
-        +
-      </button>
+      {isToday && (
+        <button
+          onClick={() => setModal('method')}
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--nav-height) + var(--safe-bottom) + 16px)',
+            right: '16px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'var(--color-accent)',
+            color: '#0d1117',
+            fontSize: '28px',
+            fontWeight: '300',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(57,211,83,0.4)',
+            border: 'none',
+            cursor: 'pointer',
+            zIndex: 50,
+            lineHeight: 1,
+          }}
+        >
+          +
+        </button>
+      )}
 
       <Modal isOpen={modal === 'method'} onClose={() => setModal(null)} title="Añadir comida">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

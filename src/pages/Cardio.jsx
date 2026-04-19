@@ -90,14 +90,14 @@ export default function Cardio() {
     if (!file) return
     setPdfParsing(true)
     try {
-      const text = await readFileAsText(file)
-      const parsed = await parseCardioPDF(text)
+      const { base64, mediaType } = await readFileAsBase64(file)
+      const parsed = await parseCardioPDF(base64, mediaType)
       if (parsed?.length > 0) {
         await bulkInsert(parsed)
         toast.success(`${parsed.length} sesiones importadas`)
         setModal(null)
       } else {
-        toast.warning('No se encontraron sesiones en el archivo')
+        toast.error('No se encontraron sesiones en el archivo')
       }
     } catch (err) {
       toast.error('Error al procesar el archivo: ' + err.message)
@@ -310,11 +310,15 @@ export default function Cardio() {
   )
 }
 
-async function readFileAsText(file) {
+async function readFileAsBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = e => resolve(e.target.result)
+    reader.onload = e => {
+      const dataUrl = e.target.result
+      const base64 = dataUrl.split(',')[1]
+      resolve({ base64, mediaType: file.type || 'application/pdf' })
+    }
     reader.onerror = reject
-    reader.readAsText(file)
+    reader.readAsDataURL(file)
   })
 }

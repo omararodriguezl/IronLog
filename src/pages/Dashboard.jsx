@@ -67,19 +67,19 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
         <StatTile
           icon="🔥"
-          value={streak}
+          value={streak > 0 ? `${streak}d` : '—'}
           label="racha"
           accent={streak > 0}
         />
         <StatTile
-          icon="📅"
+          icon="💪"
           value={sessionsThisMonth}
-          label="este mes"
+          label="entrenos/mes"
         />
         <StatTile
-          icon="🏆"
+          icon="📊"
           value={sessions.length}
-          label="total"
+          label="historial"
         />
       </div>
 

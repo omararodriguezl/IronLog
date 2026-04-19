@@ -343,6 +343,9 @@ export default function Workout() {
       {/* Full plan section */}
       <FullPlanSection plan={activePlan} sessions={sessions} />
 
+      {/* History calendar */}
+      <SessionCalendar sessions={sessions} />
+
       {/* History section */}
       <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '20px' }}>
         <button
@@ -406,6 +409,95 @@ export default function Workout() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function SessionCalendar({ sessions }) {
+  const [monthOffset, setMonthOffset] = useState(0)
+
+  const now = new Date()
+  const displayDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1)
+  const year = displayDate.getFullYear()
+  const month = displayDate.getMonth()
+
+  const monthLabel = displayDate.toLocaleDateString('es', { month: 'long', year: 'numeric' })
+
+  // Days with sessions this month
+  const sessionDates = new Set(
+    sessions
+      .filter(s => {
+        const d = new Date(s.date + 'T00:00:00')
+        return d.getFullYear() === year && d.getMonth() === month
+      })
+      .map(s => s.date)
+  )
+
+  const firstDow = new Date(year, month, 1).getDay() // 0=Sun
+  const startOffset = firstDow === 0 ? 6 : firstDow - 1 // Mon-based
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  const cells = []
+  for (let i = 0; i < startOffset; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d)
+
+  if (!sessions.length && monthOffset === 0) return null
+
+  return (
+    <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '20px', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', color: 'var(--color-text)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          Calendario
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => setMonthOffset(o => o - 1)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '28px', height: '28px', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '14px' }}>←</button>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', color: 'var(--color-text-muted)', letterSpacing: '0.04em', textTransform: 'capitalize', minWidth: '110px', textAlign: 'center' }}>{monthLabel}</span>
+          <button onClick={() => setMonthOffset(o => o + 1)} disabled={monthOffset >= 0} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '28px', height: '28px', color: monthOffset >= 0 ? 'var(--color-border)' : 'var(--color-text-muted)', cursor: monthOffset >= 0 ? 'default' : 'pointer', fontSize: '14px' }}>→</button>
+        </div>
+      </div>
+
+      {/* Day headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '4px' }}>
+        {['L','M','X','J','V','S','D'].map(d => (
+          <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontFamily: 'var(--font-display)', color: 'var(--color-text-dim)', letterSpacing: '0.06em' }}>{d}</div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+        {cells.map((day, i) => {
+          if (!day) return <div key={`e${i}`} />
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          const hasSession = sessionDates.has(dateStr)
+          const isToday = dateStr === todayStr
+          return (
+            <div key={dateStr} style={{
+              aspectRatio: '1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-sm)',
+              background: hasSession ? 'var(--color-accent)' : isToday ? 'var(--color-surface-hover)' : 'transparent',
+              border: isToday && !hasSession ? '1px solid var(--color-border)' : 'none',
+              position: 'relative',
+            }}>
+              <span style={{
+                fontSize: '12px',
+                fontFamily: 'var(--font-display)',
+                fontWeight: hasSession ? '700' : '400',
+                color: hasSession ? '#0d1117' : isToday ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              }}>{day}</span>
+            </div>
+          )
+        })}
+      </div>
+
+      {sessionDates.size > 0 && (
+        <p style={{ fontSize: '11px', color: 'var(--color-text-dim)', marginTop: '8px', textAlign: 'right', fontFamily: 'var(--font-display)' }}>
+          {sessionDates.size} entreno{sessionDates.size !== 1 ? 's' : ''} este mes
+        </p>
+      )}
     </div>
   )
 }

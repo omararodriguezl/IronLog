@@ -215,30 +215,44 @@ Proporciona:
   })
 }
 
-export async function parseCardioPDF(text) {
+export async function parseCardioPDF(base64Data, mediaType = 'application/pdf') {
   const system = `You are a running coach assistant. Always respond with valid JSON only, no markdown, no explanation.`
 
-  const userMessage = `Extract the workout schedule from this training plan text and return ONLY a JSON array.
-Session types must be one of: easy_run, intervals, tempo, long_run, race, rest
+  const prompt = `Extract ALL workout sessions from this training plan document and return ONLY a JSON array. Skip rest days.
+Map workout names to session types:
+- Easy Run, Easy → easy_run
+- Intervals, Repeats, 400m, 200s, Pyramid, Rolling, On Off, Broken, 1k → intervals
+- Tempo, Progression, Drop Set, Hotspot → tempo
+- Long Run → long_run
+- Race, 5k, 5km → race
 
+Return only sessions with actual workouts (not rest days):
 [
   {
     "date": "2026-04-13",
     "session_type": "easy_run",
     "distance_miles": 3.25,
-    "description": "Rodaje suave 3.25 millas"
+    "description": "3.25mi Easy Run"
   }
-]
-
-Training plan text:
-${text}`
+]`
 
   const result = await callClaude({
-    messages: [{ role: 'user', content: userMessage }],
+    messages: [{
+      role: 'user',
+      content: [
+        {
+          type: 'document',
+          source: { type: 'base64', media_type: mediaType, data: base64Data },
+        },
+        { type: 'text', text: prompt },
+      ],
+    }],
     maxTokens: 4096,
     system,
   })
 
-  const cleaned = result.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim()
-  return JSON.parse(cleaned)
+  const start = result.indexOf('[')
+  const end = result.lastIndexOf(']')
+  if (start === -1 || end === -1) throw new Error('No se encontró un array JSON válido')
+  return JSON.parse(result.slice(start, end + 1))
 }
