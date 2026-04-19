@@ -27,7 +27,14 @@ export default function Profile() {
 
   async function handleSave() {
     try {
-      await updateProfile(form)
+      // Only send fields that have valid values
+      const updates = { name: form.name }
+      if (form.goal) updates.goal = form.goal
+      if (form.days_per_week) updates.days_per_week = form.days_per_week
+      if (form.level) updates.level = form.level
+      if (form.equipment) updates.equipment = form.equipment
+      if (form.injuries !== undefined) updates.injuries = form.injuries
+      await updateProfile(updates)
       setEditing(false)
       toast.success('Perfil actualizado')
     } catch (err) {
