@@ -23,10 +23,11 @@ export default function Workout() {
   const intervalRef = useRef(null)
 
   const weekData = getCurrentWeekData()
+  const allDays = activePlan?.plan_json?.days || weekData?.days || []
   const todayDefault = getTodaysSession()
 
-  const dayIdx = selectedDayIdx ?? (weekData?.days?.indexOf(todayDefault) ?? 0)
-  const currentDay = weekData?.days?.[dayIdx] || null
+  const dayIdx = selectedDayIdx ?? (allDays.indexOf(todayDefault) ?? 0)
+  const currentDay = allDays[dayIdx] || null
 
   useEffect(() => {
     if (timerRunning) {
@@ -137,9 +138,9 @@ export default function Workout() {
         </div>
       </div>
 
-      {weekData?.days?.length > 1 && (
+      {allDays.length > 1 && (
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '16px' }}>
-          {weekData.days.map((day, i) => (
+          {allDays.map((day, i) => (
             <button
               key={i}
               onClick={() => setSelectedDayIdx(i)}

@@ -49,56 +49,54 @@ export async function generateWorkoutPlan({ goal, days, level, equipment, injuri
     advanced: 'Avanzado (3+ años)',
   }
 
-  // Reduce weeks to avoid token limits: volume=6, strength=5, cut=6, maintenance=4
-  const weeksMap = { volume: 6, strength: 5, cut: 6, maintenance: 4 }
-  const totalWeeks = weeksMap[goal] || 6
+  const totalWeeks = 4
+  const system = `You are an expert strength coach. Respond with valid JSON only, no markdown, no extra text.`
 
-  const system = `You are an expert strength and conditioning coach. Always respond with valid JSON only, no markdown, no explanation, no text before or after the JSON.`
+  const userMessage = `Create a ${totalWeeks}-week workout plan. The exercises are the SAME every week — only sets/reps change for progression.
 
-  const userMessage = `Generate a structured workout plan for this user:
+User:
 - Goal: ${goalMap[goal] || goal}
-- Days per week: ${days}
+- Days/week: ${days}
 - Level: ${levelMap[level] || level}
 - Equipment: ${equipmentMap[equipment] || equipment}
 - Limitations: ${injuries || 'None'}
 
-RULES:
-- Exactly ${totalWeeks} weeks total
-- Week ${totalWeeks} is deload (reduced volume)
-- ${days} training days per week, each with 5 exercises max
-- All text in Spanish
-- Keep tips short (max 8 words)
+IMPORTANT:
+- "days" array is defined ONCE (week 1 template, reused all weeks)
+- Each week only has: week_number, theme, is_deload, progression_note
+- Week ${totalWeeks} is deload
+- Max 5 exercises per day
+- All Spanish text
+- Tips max 6 words
 
-Return ONLY this JSON (no extra text):
+Return ONLY this JSON:
 {
   "goal": "${goal}",
   "total_weeks": ${totalWeeks},
-  "session_duration_minutes": 75,
+  "session_duration_minutes": 70,
   "rest_between_sets_seconds": 90,
-  "weekly_structure": "PPL",
-  "weeks": [
+  "weekly_structure": "Full Body",
+  "days": [
     {
-      "week_number": 1,
-      "theme": "Semana de base",
-      "is_deload": false,
-      "days": [
+      "day_label": "Día A – Empuje",
+      "exercises": [
         {
-          "day_label": "Día A – Empuje",
-          "exercises": [
-            {
-              "id": "bench_press",
-              "name": "Press de Banca",
-              "muscle_group": "Chest",
-              "equipment": "Barbell",
-              "sets": 4,
-              "reps": "8-10",
-              "rest_seconds": 90,
-              "tip": "Retrae escápulas, arco natural"
-            }
-          ]
+          "id": "press_banca",
+          "name": "Press de Banca",
+          "muscle_group": "Chest",
+          "sets": 4,
+          "reps": "8-10",
+          "rest_seconds": 90,
+          "tip": "Retrae escápulas, arco natural"
         }
       ]
     }
+  ],
+  "weeks": [
+    { "week_number": 1, "theme": "Semana de base", "is_deload": false, "progression_note": "Establece tus pesos de referencia" },
+    { "week_number": 2, "theme": "Semana de carga", "is_deload": false, "progression_note": "+2.5kg en ejercicios principales" },
+    { "week_number": 3, "theme": "Semana de intensidad", "is_deload": false, "progression_note": "+2.5kg, reduce 1 rep por serie" },
+    { "week_number": 4, "theme": "Semana de descarga", "is_deload": true, "progression_note": "Reduce peso 40%, mismas series" }
   ]
 }`
 

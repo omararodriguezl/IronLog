@@ -76,28 +76,36 @@ export function useWorkout(userId) {
     setActivePlan(prev => prev ? { ...prev, current_week: week } : prev)
   }
 
-  function getTodaysDayIndex() {
-    if (!activePlan?.plan_json?.weeks) return null
-    const week = activePlan.plan_json.weeks.find(w => w.week_number === activePlan.current_week)
-    if (!week) return null
+  function getDays() {
+    const plan = activePlan?.plan_json
+    if (!plan) return []
+    // Support both formats: days at root level (new) or inside weeks (old)
+    if (plan.days) return plan.days
+    const week = plan.weeks?.find(w => w.week_number === activePlan.current_week)
+    return week?.days || []
+  }
 
+  function getTodaysDayIndex() {
+    const days = getDays()
+    if (!days.length) return null
     const dayOfWeek = new Date().getDay()
-    const daysInPlan = week.days.length
     const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-    return adjustedDay % daysInPlan
+    return adjustedDay % days.length
   }
 
   function getTodaysSession() {
-    if (!activePlan?.plan_json?.weeks) return null
-    const week = activePlan.plan_json.weeks.find(w => w.week_number === activePlan.current_week)
-    if (!week) return null
+    const days = getDays()
+    if (!days.length) return null
     const idx = getTodaysDayIndex()
-    return idx !== null ? week.days[idx] : week.days[0]
+    return days[idx ?? 0]
   }
 
   function getCurrentWeekData() {
     if (!activePlan?.plan_json?.weeks) return null
-    return activePlan.plan_json.weeks.find(w => w.week_number === activePlan.current_week) || null
+    const week = activePlan.plan_json.weeks.find(w => w.week_number === activePlan.current_week) || null
+    // Attach days to week for backwards compat
+    if (week && !week.days) week.days = getDays()
+    return week
   }
 
   return {
