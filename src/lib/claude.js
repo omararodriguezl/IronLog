@@ -1,5 +1,5 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
-const MODEL = 'claude-opus-4-7'
+const MODEL = 'claude-opus-4-5'
 const API_URL = 'https://api.anthropic.com/v1/messages'
 
 async function callClaude({ messages, maxTokens = 4096, system }) {
@@ -23,11 +23,15 @@ async function callClaude({ messages, maxTokens = 4096, system }) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error(err.error?.message || `Claude API error: ${response.status}`)
+    const errorMsg = err.error?.message || `Claude API error ${response.status}`
+    console.error('[Claude API error]', response.status, err)
+    throw new Error(errorMsg)
   }
 
   const data = await response.json()
-  return data.content[0].text
+  const text = data.content[0].text
+  console.log('[Claude raw response]', text.slice(0, 300))
+  return text
 }
 
 export async function generateWorkoutPlan({ goal, days, level, equipment, injuries }) {
