@@ -76,9 +76,10 @@ YOUR DECISIONS (apply real periodization science):
 RULES:
 - Exercises defined ONCE in the "days" array (reused every week, only notes change per week)
 - Max 5 exercises per day
-- All text in Spanish
+- All text in Spanish EXCEPT english_name (must be in English for GIF lookup)
 - Tips max 6 words
 - total_weeks must be between 4 and 10
+- english_name must be the standard English gym name (e.g. "Barbell Squat", "Pull Up", "Dumbbell Curl")
 
 Return ONLY this JSON structure:
 {
@@ -95,6 +96,7 @@ Return ONLY this JSON structure:
         {
           "id": "press_banca",
           "name": "Press de Banca",
+          "english_name": "Barbell Bench Press",
           "muscle_group": "Chest",
           "sets": 4,
           "reps": "8-10",
