@@ -11,7 +11,7 @@ import { muscleGroupColors } from '../theme'
 
 export default function Workout() {
   const { profile } = useAuth()
-  const { activePlan, sessions, saveSession, getCurrentWeekData, getTodaysSession, loading } = useWorkout(profile?.id)
+  const { activePlan, sessions, saveSession, deleteSession, deleteAllSessions, updateCurrentWeek, getCurrentWeekData, loading } = useWorkout(profile?.id)
   const { analyze } = useCoach(profile?.id)
   const toast = useToast()
 
@@ -23,13 +23,11 @@ export default function Workout() {
   const [selectedDayIdx, setSelectedDayIdx] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
   const [expandedSession, setExpandedSession] = useState(null)
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const intervalRef = useRef(null)
 
   const weekData = getCurrentWeekData()
   const allDays = activePlan?.plan_json?.days || weekData?.days || []
-  const todayDefault = getTodaysSession()
-  const dayIdx = selectedDayIdx ?? (allDays.indexOf(todayDefault) ?? 0)
-  const currentDay = allDays[dayIdx] || null
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -39,6 +37,14 @@ export default function Workout() {
       .filter(s => s.week_number === activePlan?.current_week)
       .map(s => s.day_label)
   )
+
+  // Default to first incomplete day of the week (Day 1 progression)
+  const defaultDayIdx = (() => {
+    const firstIncomplete = allDays.findIndex(d => !completedDayLabels.has(d.day_label))
+    return firstIncomplete >= 0 ? firstIncomplete : 0
+  })()
+  const dayIdx = selectedDayIdx ?? defaultDayIdx
+  const currentDay = allDays[dayIdx] || null
 
   // Is current day already done today?
   const todaySessionDone = sessions.some(
@@ -90,12 +96,53 @@ export default function Workout() {
       setTimerRunning(false)
       setElapsed(0)
       setExerciseSets({})
-      toast.success('¡Sesión guardada! 💪')
+
+      // Check if week is now complete
+      const newCompleted = new Set([...completedDayLabels, currentDay.day_label])
+      const allDone = allDays.every(d => newCompleted.has(d.day_label))
+
+      if (allDone) {
+        const nextWeek = activePlan.current_week + 1
+        if (nextWeek <= (activePlan.plan_json?.total_weeks || 0)) {
+          await updateCurrentWeek(activePlan.id, nextWeek)
+          setSelectedDayIdx(0)
+          toast.success(`¡Semana ${activePlan.current_week} completada! 🎉 Avanzando a semana ${nextWeek}`)
+        } else {
+          toast.success('¡Plan completado! 🏆 Has terminado todo el programa')
+        }
+      } else {
+        // Advance to next incomplete day
+        const nextIdx = allDays.findIndex((d, i) => i > dayIdx && !newCompleted.has(d.day_label))
+        if (nextIdx >= 0) setSelectedDayIdx(nextIdx)
+        toast.success('¡Sesión guardada! 💪')
+      }
+
       analyze(profile, activePlan).catch(() => {})
     } catch (err) {
       toast.error('Error guardando sesión: ' + err.message)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleDeleteSession(id) {
+    try {
+      await deleteSession(id)
+      setExpandedSession(null)
+      toast.success('Sesión eliminada')
+    } catch (err) {
+      toast.error('Error: ' + err.message)
+    }
+  }
+
+  async function handleDeleteAllHistory() {
+    try {
+      await deleteAllSessions()
+      setConfirmDeleteAll(false)
+      setShowHistory(false)
+      toast.success('Historial eliminado')
+    } catch (err) {
+      toast.error('Error: ' + err.message)
     }
   }
 
@@ -308,7 +355,7 @@ export default function Workout() {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            marginBottom: showHistory ? '16px' : '0',
+            marginBottom: showHistory ? '12px' : '0',
           }}
         >
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', color: 'var(--color-text)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
@@ -321,6 +368,25 @@ export default function Workout() {
 
         {showHistory && (
           <div style={{ animation: 'fadeIn 0.2s ease' }}>
+            {sessions.length > 0 && (
+              <div style={{ marginBottom: '12px' }}>
+                {!confirmDeleteAll ? (
+                  <button
+                    onClick={() => setConfirmDeleteAll(true)}
+                    style={{ fontSize: '12px', color: 'var(--color-error, #ff4444)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}
+                  >
+                    🗑 Borrar todo el historial
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '10px', background: '#ff444422', borderRadius: 'var(--radius-md)', border: '1px solid #ff444444' }}>
+                    <span style={{ fontSize: '12px', color: '#ff4444', flex: 1 }}>¿Borrar todas las sesiones?</span>
+                    <button onClick={handleDeleteAllHistory} style={{ fontSize: '12px', color: '#ff4444', background: 'none', border: '1px solid #ff4444', borderRadius: 'var(--radius-sm)', padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: '700' }}>SÍ</button>
+                    <button onClick={() => setConfirmDeleteAll(false)} style={{ fontSize: '12px', color: 'var(--color-text-muted)', background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-display)' }}>NO</button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {sessions.length === 0 ? (
               <p style={{ color: 'var(--color-text-dim)', fontSize: '14px', textAlign: 'center', padding: '24px 0' }}>
                 Sin sesiones registradas aún
@@ -332,6 +398,7 @@ export default function Workout() {
                   session={session}
                   expanded={expandedSession === session.id}
                   onToggle={() => setExpandedSession(id => id === session.id ? null : session.id)}
+                  onDelete={() => handleDeleteSession(session.id)}
                   useKg={useKg}
                 />
               ))
@@ -447,16 +514,16 @@ function FullPlanSection({ plan, sessions }) {
   )
 }
 
-function SessionHistoryCard({ session, expanded, onToggle, useKg }) {
+function SessionHistoryCard({ session, expanded, onToggle, onDelete, useKg }) {
   const totalVolume = (session.exercises || []).reduce((acc, ex) =>
     acc + (ex.sets || []).reduce((s, set) => s + ((set.weight || 0) * (set.reps || 0)), 0), 0)
 
   const totalSets = (session.exercises || []).reduce((acc, ex) => acc + (ex.sets?.length || 0), 0)
 
   return (
-    <Card style={{ marginBottom: '10px', cursor: 'pointer' }} onClick={onToggle}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
+    <Card style={{ marginBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} onClick={onToggle}>
+        <div style={{ flex: 1, cursor: 'pointer' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
             <span style={{
               fontSize: '11px',
@@ -480,7 +547,14 @@ function SessionHistoryCard({ session, expanded, onToggle, useKg }) {
             {session.duration_minutes > 0 && ` · ${session.duration_minutes} min`}
           </p>
         </div>
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+          <button
+            onClick={e => { e.stopPropagation(); onDelete() }}
+            style={{ fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', padding: '0 0 0 8px', lineHeight: 1 }}
+            title="Eliminar sesión"
+          >
+            🗑
+          </button>
           {totalVolume > 0 && (
             <>
               <p style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', color: 'var(--color-text)' }}>
@@ -490,7 +564,7 @@ function SessionHistoryCard({ session, expanded, onToggle, useKg }) {
             </>
           )}
           {totalSets > 0 && (
-            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
               {totalSets} series
             </p>
           )}

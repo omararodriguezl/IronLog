@@ -13,13 +13,14 @@ import { useToast } from '../components/ui/Toast'
 export default function Nutrition() {
   const { profile } = useAuth()
   const today = new Date().toISOString().split('T')[0]
-  const { entries, loading, addEntry, deleteEntry, getTotals, goals } = useNutrition(profile?.id, today)
+  const { entries, loading, addEntry, deleteEntry, getTotals, goals, updateGoals } = useNutrition(profile?.id, today)
   const toast = useToast()
 
-  const [modal, setModal] = useState(null) // null | 'method' | 'photo' | 'barcode' | 'manual'
+  const [modal, setModal] = useState(null) // null | 'method' | 'photo' | 'barcode' | 'manual' | 'goals'
   const [saving, setSaving] = useState(false)
   const [manualForm, setManualForm] = useState({ meal_name: '', calories: '', protein_g: '', carbs_g: '', fat_g: '' })
   const [errors, setErrors] = useState({})
+  const [goalsForm, setGoalsForm] = useState(null)
 
   async function handleAdd(entry) {
     setSaving(true)
@@ -69,13 +70,21 @@ export default function Nutrition() {
 
   return (
     <div style={{ padding: '0 16px 16px', animation: 'fadeIn 0.2s ease' }}>
-      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>
-          Nutrición
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-          {new Date(today + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </p>
+      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>
+            Nutrición
+          </h1>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '2px' }}>
+            {new Date(today + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+        </div>
+        <button
+          onClick={() => { setGoalsForm({ ...goals }); setModal('goals') }}
+          style={{ fontSize: '12px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em', paddingBottom: '2px' }}
+        >
+          METAS →
+        </button>
       </div>
 
       <MacroSummary totals={totals} goals={goals} />
@@ -147,6 +156,22 @@ export default function Nutrition() {
           onConfirm={handleAdd}
           onClose={() => setModal(null)}
         />
+      </Modal>
+
+      <Modal isOpen={modal === 'goals'} onClose={() => setModal(null)} title="Editar metas">
+        {goalsForm && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <Input label="Calorías (kcal)" type="number" inputMode="numeric" value={goalsForm.calories} onChange={e => setGoalsForm(f => ({ ...f, calories: parseInt(e.target.value) || 0 }))} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              <Input label="Proteína (g)" type="number" inputMode="numeric" value={goalsForm.protein_g} onChange={e => setGoalsForm(f => ({ ...f, protein_g: parseInt(e.target.value) || 0 }))} />
+              <Input label="Carbos (g)" type="number" inputMode="numeric" value={goalsForm.carbs_g} onChange={e => setGoalsForm(f => ({ ...f, carbs_g: parseInt(e.target.value) || 0 }))} />
+              <Input label="Grasa (g)" type="number" inputMode="numeric" value={goalsForm.fat_g} onChange={e => setGoalsForm(f => ({ ...f, fat_g: parseInt(e.target.value) || 0 }))} />
+            </div>
+            <Button onClick={() => { updateGoals(goalsForm); setModal(null); toast.success('Metas actualizadas') }}>
+              Guardar metas
+            </Button>
+          </div>
+        )}
       </Modal>
 
       <Modal isOpen={modal === 'manual'} onClose={() => setModal(null)} title="Entrada manual">

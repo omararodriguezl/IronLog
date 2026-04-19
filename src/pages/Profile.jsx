@@ -61,7 +61,7 @@ export default function Profile() {
     setForm(f => ({ ...f, [key]: val }))
   }
 
-  async function handleSave() {
+  async function handleSave(andRegenerate = false) {
     try {
       const updates = { name: form.name }
       if (form.goal) updates.goal = form.goal
@@ -71,25 +71,30 @@ export default function Profile() {
       updates.injuries = form.injuries || null
       await updateProfile(updates)
       setEditing(false)
-      toast.success('Perfil actualizado')
+      if (andRegenerate) {
+        await handleRegeneratePlan({ ...profile, ...updates })
+      } else {
+        toast.success('Perfil actualizado')
+      }
     } catch (err) {
       toast.error('Error: ' + err.message)
     }
   }
 
-  async function handleRegeneratePlan() {
-    if (!profile) return
+  async function handleRegeneratePlan(overrideProfile) {
+    const p = overrideProfile || profile
+    if (!p) return
     setRegenerating(true)
     try {
       const planJson = await generateWorkoutPlan({
-        goal: profile.goal,
-        days: profile.days_per_week,
-        level: profile.level,
-        equipment: profile.equipment,
-        injuries: profile.injuries,
+        goal: p.goal,
+        days: p.days_per_week,
+        level: p.level,
+        equipment: p.equipment,
+        injuries: p.injuries,
       })
       await savePlan(planJson)
-      toast.success('Nuevo plan generado')
+      toast.success('¡Nuevo plan generado! 🚀')
     } catch (err) {
       toast.error('Error: ' + err.message)
     } finally {
@@ -113,23 +118,25 @@ export default function Profile() {
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
             Mis datos
           </h2>
-          <button
-            onClick={() => editing ? handleSave() : setEditing(true)}
-            style={{
-              padding: '6px 14px',
-              background: editing ? 'var(--color-accent)' : 'var(--color-surface-hover)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              color: editing ? '#0d1117' : 'var(--color-text-muted)',
-              fontFamily: 'var(--font-display)',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {editing ? 'GUARDAR' : 'EDITAR'}
-          </button>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              style={{
+                padding: '6px 14px',
+                background: 'var(--color-surface-hover)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--color-text-muted)',
+                fontFamily: 'var(--font-display)',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+              }}
+            >
+              EDITAR
+            </button>
+          )}
         </div>
 
         {editing ? (
@@ -217,9 +224,21 @@ export default function Profile() {
               style={{ minHeight: '72px' }}
             />
 
-            <Button variant="ghost" onClick={() => { setEditing(false); }}>
-              Cancelar
-            </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Button onClick={() => handleSave(false)}>
+                Guardar cambios
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleSave(true)}
+                loading={regenerating}
+              >
+                🔄 Guardar y regenerar plan
+              </Button>
+              <Button variant="ghost" onClick={() => setEditing(false)}>
+                Cancelar
+              </Button>
+            </div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

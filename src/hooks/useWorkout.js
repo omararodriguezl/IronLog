@@ -34,7 +34,7 @@ export function useWorkout(userId) {
       .select('*')
       .eq('user_id', userId)
       .order('date', { ascending: false })
-      .limit(10)
+      .limit(30)
     setSessions(data || [])
   }
 
@@ -67,6 +67,21 @@ export function useWorkout(userId) {
     return data
   }
 
+  async function deleteSession(id) {
+    const { error } = await supabase.from('workout_sessions').delete().eq('id', id)
+    if (error) throw error
+    setSessions(prev => prev.filter(s => s.id !== id))
+  }
+
+  async function deleteAllSessions() {
+    const { error } = await supabase
+      .from('workout_sessions')
+      .delete()
+      .eq('user_id', userId)
+    if (error) throw error
+    setSessions([])
+  }
+
   async function updateCurrentWeek(planId, week) {
     const { error } = await supabase
       .from('workout_plans')
@@ -79,7 +94,6 @@ export function useWorkout(userId) {
   function getDays() {
     const plan = activePlan?.plan_json
     if (!plan) return []
-    // Support both formats: days at root level (new) or inside weeks (old)
     if (plan.days) return plan.days
     const week = plan.weeks?.find(w => w.week_number === activePlan.current_week)
     return week?.days || []
@@ -103,7 +117,6 @@ export function useWorkout(userId) {
   function getCurrentWeekData() {
     if (!activePlan?.plan_json?.weeks) return null
     const week = activePlan.plan_json.weeks.find(w => w.week_number === activePlan.current_week) || null
-    // Attach days to week for backwards compat
     if (week && !week.days) week.days = getDays()
     return week
   }
@@ -115,6 +128,8 @@ export function useWorkout(userId) {
     error,
     savePlan,
     saveSession,
+    deleteSession,
+    deleteAllSessions,
     updateCurrentWeek,
     getTodaysSession,
     getCurrentWeekData,

@@ -1,19 +1,34 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-const MACRO_GOALS = {
+const DEFAULT_GOALS = {
   calories: 2200,
   protein_g: 150,
   carbs_g: 250,
   fat_g: 65,
 }
 
+function loadGoals(userId) {
+  if (!userId) return DEFAULT_GOALS
+  try {
+    const stored = localStorage.getItem(`nutrition_goals_${userId}`)
+    return stored ? { ...DEFAULT_GOALS, ...JSON.parse(stored) } : DEFAULT_GOALS
+  } catch {
+    return DEFAULT_GOALS
+  }
+}
+
 export function useNutrition(userId, date) {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [goals, setGoals] = useState(() => loadGoals(userId))
 
   const targetDate = date || new Date().toISOString().split('T')[0]
+
+  useEffect(() => {
+    setGoals(loadGoals(userId))
+  }, [userId])
 
   useEffect(() => {
     if (!userId) return
@@ -50,6 +65,12 @@ export function useNutrition(userId, date) {
     setEntries(prev => prev.filter(e => e.id !== id))
   }
 
+  function updateGoals(newGoals) {
+    const merged = { ...goals, ...newGoals }
+    setGoals(merged)
+    if (userId) localStorage.setItem(`nutrition_goals_${userId}`, JSON.stringify(merged))
+  }
+
   function getTotals() {
     return entries.reduce(
       (acc, e) => ({
@@ -69,7 +90,8 @@ export function useNutrition(userId, date) {
     addEntry,
     deleteEntry,
     getTotals,
-    goals: MACRO_GOALS,
+    goals,
+    updateGoals,
     reload: loadEntries,
   }
 }

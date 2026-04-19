@@ -1,136 +1,41 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Modal from '../ui/Modal'
 
-function slugify(name) {
-  return (name || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-}
-
-const GIF_DATE_PATHS = [
-  '2021/02', '2021/04', '2021/06', '2021/08', '2021/10', '2021/12',
-  '2022/02', '2022/04', '2022/06', '2022/08', '2023/02', '2023/04',
-]
-
 export default function GifModal({ exercise, onClose }) {
-  const [dateIdx, setDateIdx] = useState(0)
-  const [allFailed, setAllFailed] = useState(false)
-
   const englishName = exercise?.english_name || exercise?.name || ''
-  const slug = slugify(englishName)
-  const gifUrl = `https://fitnessprogramer.com/wp-content/uploads/${GIF_DATE_PATHS[dateIdx]}/${slug}.gif`
   const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(englishName + ' exercise form tutorial')}`
-
-  useEffect(() => {
-    setDateIdx(0)
-    setAllFailed(false)
-  }, [exercise?.id])
-
-  function handleImgError() {
-    if (dateIdx < GIF_DATE_PATHS.length - 1) {
-      setDateIdx(i => i + 1)
-    } else {
-      setAllFailed(true)
-    }
-  }
 
   return (
     <Modal isOpen={!!exercise} onClose={onClose} title={exercise?.name}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {!allFailed ? (
-          <div style={{ width: '100%', maxWidth: '320px', position: 'relative' }}>
-            <img
-              key={`${exercise?.id}-${dateIdx}`}
-              src={gifUrl}
-              alt={exercise?.name}
-              onError={handleImgError}
-              style={{
-                width: '100%',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--color-border)',
-                minHeight: '160px',
-                objectFit: 'cover',
-                background: 'var(--color-surface-hover)',
-                display: 'block',
-              }}
-            />
-          </div>
-        ) : (
-          <div style={{
-            width: '100%',
-            maxWidth: '320px',
+        <a
+          href={youtubeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            padding: '16px',
+            background: '#ff000022',
+            border: '1px solid #ff000044',
             borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--color-border)',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              height: '160px',
-              background: 'var(--color-surface-hover)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-            }}>
-              <span style={{ fontSize: '40px' }}>🎬</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                GIF no disponible
-              </span>
-            </div>
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px',
-                background: '#ff000022',
-                borderTop: '1px solid #ff000044',
-                color: '#ff4444',
-                fontFamily: 'var(--font-display)',
-                fontSize: '13px',
-                fontWeight: '700',
-                letterSpacing: '0.04em',
-                textDecoration: 'none',
-                transition: 'background 0.15s ease',
-              }}
-            >
-              <span style={{ fontSize: '18px' }}>▶</span>
-              VER EN YOUTUBE
-            </a>
-          </div>
-        )}
-
-        {/* Always show YouTube link */}
-        {!allFailed && englishName && (
-          <a
-            href={youtubeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              color: 'var(--color-text-dim)',
-              fontFamily: 'var(--font-body)',
-              textDecoration: 'none',
-            }}
-          >
-            <span style={{ fontSize: '14px' }}>▶</span>
-            Ver tutorial en YouTube
-          </a>
-        )}
+            color: '#ff4444',
+            fontFamily: 'var(--font-display)',
+            fontSize: '14px',
+            fontWeight: '700',
+            letterSpacing: '0.06em',
+            textDecoration: 'none',
+          }}
+        >
+          <span style={{ fontSize: '22px' }}>▶</span>
+          VER TUTORIAL EN YOUTUBE
+        </a>
 
         {exercise?.tip && (
           <div style={{
-            width: '100%',
             padding: '12px 14px',
             background: 'var(--color-accent-dim)',
             borderRadius: 'var(--radius-md)',
@@ -153,7 +58,7 @@ export default function GifModal({ exercise, onClose }) {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
           <Stat label="Series" value={exercise?.sets} />
           <Stat label="Reps" value={exercise?.reps} />
           <Stat label="Descanso" value={exercise?.rest_seconds ? `${exercise.rest_seconds}s` : '—'} />
