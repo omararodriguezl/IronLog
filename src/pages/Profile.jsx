@@ -1,39 +1,74 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useWorkout } from '../hooks/useWorkout'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import Input from '../components/ui/Input'
+import Input, { Textarea } from '../components/ui/Input'
 import { useToast } from '../components/ui/Toast'
 import { generateWorkoutPlan } from '../lib/claude'
-import { supabase } from '../lib/supabase'
 import Spinner from '../components/ui/Spinner'
+
+const goals = [
+  { id: 'volume', label: 'Ganar músculo / Volumen' },
+  { id: 'strength', label: 'Fuerza pura' },
+  { id: 'cut', label: 'Perder grasa / Definición' },
+  { id: 'maintenance', label: 'Mantenimiento' },
+]
+
+const levels = [
+  { id: 'beginner', label: 'Principiante (< 1 año)' },
+  { id: 'intermediate', label: 'Intermedio (1-3 años)' },
+  { id: 'advanced', label: 'Avanzado (3+ años)' },
+]
+
+const equipmentOptions = [
+  { id: 'full_gym', label: 'Gimnasio completo' },
+  { id: 'dumbbells_bar', label: 'Mancuernas + barra' },
+  { id: 'dumbbells', label: 'Solo mancuernas' },
+  { id: 'bodyweight', label: 'Peso corporal' },
+]
 
 export default function Profile() {
   const { profile, signOut, updateProfile, user } = useAuth()
-  const { activePlan, savePlan, loading: planLoading } = useWorkout(profile?.id)
+  const { activePlan, savePlan } = useWorkout(profile?.id)
   const toast = useToast()
 
   const [editing, setEditing] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [form, setForm] = useState({
-    name: profile?.name || '',
-    goal: profile?.goal || '',
-    days_per_week: profile?.days_per_week || 4,
-    level: profile?.level || '',
-    equipment: profile?.equipment || '',
-    injuries: profile?.injuries || '',
+    name: '',
+    goal: '',
+    days_per_week: 4,
+    level: '',
+    equipment: '',
+    injuries: '',
   })
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name || '',
+        goal: profile.goal || '',
+        days_per_week: profile.days_per_week || 4,
+        level: profile.level || '',
+        equipment: profile.equipment || '',
+        injuries: profile.injuries || '',
+      })
+    }
+  }, [profile])
+
+  function setF(key, val) {
+    setForm(f => ({ ...f, [key]: val }))
+  }
 
   async function handleSave() {
     try {
-      // Only send fields that have valid values
       const updates = { name: form.name }
       if (form.goal) updates.goal = form.goal
-      if (form.days_per_week) updates.days_per_week = form.days_per_week
+      if (form.days_per_week) updates.days_per_week = Number(form.days_per_week)
       if (form.level) updates.level = form.level
       if (form.equipment) updates.equipment = form.equipment
-      if (form.injuries !== undefined) updates.injuries = form.injuries
+      updates.injuries = form.injuries || null
       await updateProfile(updates)
       setEditing(false)
       toast.success('Perfil actualizado')
@@ -60,10 +95,6 @@ export default function Profile() {
     } finally {
       setRegenerating(false)
     }
-  }
-
-  async function handleSignOut() {
-    await signOut()
   }
 
   return (
@@ -102,14 +133,93 @@ export default function Profile() {
         </div>
 
         {editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Input
               label="Nombre"
               value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              onChange={e => setF('name', e.target.value)}
               placeholder="Tu nombre"
             />
-            <Button variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button>
+
+            <div>
+              <label style={labelStyle}>Objetivo</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {goals.map(g => (
+                  <OptionPill
+                    key={g.id}
+                    label={g.label}
+                    selected={form.goal === g.id}
+                    onClick={() => setF('goal', g.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Días por semana</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                {[3, 4, 5, 6].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => setF('days_per_week', d)}
+                    style={{
+                      padding: '12px 8px',
+                      borderRadius: 'var(--radius-md)',
+                      border: `1px solid ${form.days_per_week === d ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                      background: form.days_per_week === d ? 'var(--color-accent-dim)' : 'var(--color-surface)',
+                      color: form.days_per_week === d ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Nivel</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {levels.map(l => (
+                  <OptionPill
+                    key={l.id}
+                    label={l.label}
+                    selected={form.level === l.id}
+                    onClick={() => setF('level', l.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Equipamiento</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {equipmentOptions.map(e => (
+                  <OptionPill
+                    key={e.id}
+                    label={e.label}
+                    selected={form.equipment === e.id}
+                    onClick={() => setF('equipment', e.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <Textarea
+              label="Lesiones o limitaciones (opcional)"
+              placeholder="Ej: dolor en rodilla derecha..."
+              value={form.injuries}
+              onChange={e => setF('injuries', e.target.value)}
+              style={{ minHeight: '72px' }}
+            />
+
+            <Button variant="ghost" onClick={() => { setEditing(false); }}>
+              Cancelar
+            </Button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -145,6 +255,20 @@ export default function Profile() {
         </Card>
       )}
 
+      {!activePlan && profile?.goal && (
+        <Card style={{ marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+            Generar plan
+          </h2>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+            No tienes un plan activo. Genera uno con tu perfil actual.
+          </p>
+          <Button onClick={handleRegeneratePlan} loading={regenerating}>
+            🚀 Generar mi plan con IA
+          </Button>
+        </Card>
+      )}
+
       <Card style={{ marginBottom: '16px' }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
           App
@@ -152,11 +276,48 @@ export default function Profile() {
         <p style={{ fontSize: '12px', color: 'var(--color-text-dim)', marginBottom: '16px' }}>
           IRON LOG v1.0.0 · Powered by Claude AI
         </p>
-        <Button variant="danger" onClick={handleSignOut}>
+        <Button variant="danger" onClick={signOut}>
           Cerrar sesión
         </Button>
       </Card>
     </div>
+  )
+}
+
+const labelStyle = {
+  display: 'block',
+  fontFamily: 'var(--font-display)',
+  fontSize: '12px',
+  fontWeight: '600',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-muted)',
+  marginBottom: '8px',
+}
+
+function OptionPill({ label, selected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '12px 14px',
+        borderRadius: 'var(--radius-md)',
+        border: `1px solid ${selected ? 'var(--color-accent)' : 'var(--color-border)'}`,
+        background: selected ? 'var(--color-accent-dim)' : 'var(--color-surface)',
+        color: selected ? 'var(--color-accent)' : 'var(--color-text-muted)',
+        fontFamily: 'var(--font-body)',
+        fontSize: '14px',
+        cursor: 'pointer',
+        textAlign: 'left',
+        transition: 'all 0.15s ease',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {label}
+      {selected && <span style={{ fontSize: '16px' }}>✓</span>}
+    </button>
   )
 }
 
