@@ -49,40 +49,41 @@ export async function generateWorkoutPlan({ goal, days, level, equipment, injuri
     advanced: 'Avanzado (3+ años)',
   }
 
-  const system = `You are an expert strength and conditioning coach with deep knowledge of exercise science and hypertrophy research. Always respond with valid JSON only, no markdown, no explanation.`
+  // Reduce weeks to avoid token limits: volume=6, strength=5, cut=6, maintenance=4
+  const weeksMap = { volume: 6, strength: 5, cut: 6, maintenance: 4 }
+  const totalWeeks = weeksMap[goal] || 6
 
-  const userMessage = `Generate a complete, structured workout plan based on this user profile:
+  const system = `You are an expert strength and conditioning coach. Always respond with valid JSON only, no markdown, no explanation, no text before or after the JSON.`
+
+  const userMessage = `Generate a structured workout plan for this user:
 - Goal: ${goalMap[goal] || goal}
-- Training days per week: ${days}
-- Experience level: ${levelMap[level] || level}
-- Available equipment: ${equipmentMap[equipment] || equipment}
-- Physical limitations: ${injuries || 'None'}
+- Days per week: ${days}
+- Level: ${levelMap[level] || level}
+- Equipment: ${equipmentMap[equipment] || equipment}
+- Limitations: ${injuries || 'None'}
 
-PLAN REQUIREMENTS:
-- Duration based on goal: volume = 10 weeks, strength = 7 weeks, cut = 8 weeks, maintenance = 8 weeks
-- Include a deload week every 4th week (reduced volume/intensity)
-- Each week must show clear progression (volume, weight, or intensity increase)
-- Specify estimated session duration based on goal
-- Specify rest time between sets based on goal
-- Include 5-7 exercises per session
-- Each exercise needs: name, sets, reps, rest_seconds, tip (form cue in Spanish)
-- All text fields in Spanish
+RULES:
+- Exactly ${totalWeeks} weeks total
+- Week ${totalWeeks} is deload (reduced volume)
+- ${days} training days per week, each with 5 exercises max
+- All text in Spanish
+- Keep tips short (max 8 words)
 
-Respond ONLY in this exact JSON format:
+Return ONLY this JSON (no extra text):
 {
-  "goal": "volume",
-  "total_weeks": 10,
-  "session_duration_minutes": 85,
-  "rest_between_sets_seconds": 75,
+  "goal": "${goal}",
+  "total_weeks": ${totalWeeks},
+  "session_duration_minutes": 75,
+  "rest_between_sets_seconds": 90,
   "weekly_structure": "PPL",
   "weeks": [
     {
       "week_number": 1,
-      "theme": "Semana de fundación — establece pesos base",
+      "theme": "Semana de base",
       "is_deload": false,
       "days": [
         {
-          "day_label": "Día A – Empuje (Pecho / Hombros / Tríceps)",
+          "day_label": "Día A – Empuje",
           "exercises": [
             {
               "id": "bench_press",
@@ -92,7 +93,7 @@ Respond ONLY in this exact JSON format:
               "sets": 4,
               "reps": "8-10",
               "rest_seconds": 90,
-              "tip": "Retrae las escápulas, mantén el arco natural"
+              "tip": "Retrae escápulas, arco natural"
             }
           ]
         }
@@ -103,12 +104,21 @@ Respond ONLY in this exact JSON format:
 
   const text = await callClaude({
     messages: [{ role: 'user', content: userMessage }],
-    maxTokens: 8000,
+    maxTokens: 16000,
     system,
   })
 
-  const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim()
-  return JSON.parse(cleaned)
+  // Extract JSON robustly — find first { and last }
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('La respuesta de Claude no contiene JSON válido')
+  const jsonStr = text.slice(start, end + 1)
+
+  try {
+    return JSON.parse(jsonStr)
+  } catch (e) {
+    throw new Error('Error al procesar el plan generado. Intenta de nuevo.')
+  }
 }
 
 export async function analyzeFood(base64Image, mimeType = 'image/jpeg') {
