@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useWorkout } from '../hooks/useWorkout'
 import Card from '../components/ui/Card'
@@ -29,6 +30,7 @@ const equipmentOptions = [
 ]
 
 export default function Profile() {
+  const navigate = useNavigate()
   const { profile, signOut, updateProfile, user } = useAuth()
   const { activePlan, savePlan } = useWorkout(profile?.id)
   const toast = useToast()
@@ -311,6 +313,9 @@ export default function Profile() {
         <p style={{ fontSize: '12px', color: 'var(--color-text-dim)', marginBottom: '16px' }}>
           IRON LOG v1.0.0 · Powered by Claude AI
         </p>
+        <Button variant="secondary" onClick={() => navigate('/coach')} style={{ marginBottom: '10px' }}>
+          🧠 Coach IA
+        </Button>
         <Button variant="danger" onClick={signOut}>
           Cerrar sesión
         </Button>
