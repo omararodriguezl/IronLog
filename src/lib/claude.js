@@ -1,5 +1,5 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-opus-4-5'
 const API_URL = 'https://api.anthropic.com/v1/messages'
 
 async function callClaude({ messages, maxTokens = 4096, system }) {
