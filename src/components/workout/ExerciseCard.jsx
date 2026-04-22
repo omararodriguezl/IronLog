@@ -80,43 +80,42 @@ export default function ExerciseCard({ exercise, useKg, onSetsUpdate, onSwap, pr
                 💡 {exercise.tip}
               </p>
             )}
-          </div>
-
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             {onSwap && (
               <button
                 onClick={e => { e.stopPropagation(); setShowSwap(true) }}
                 style={{
-                  width: 36, height: 36,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  marginTop: 8, padding: '4px 10px',
                   background: 'var(--color-surface-hover)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
+                  borderRadius: 999,
+                  fontFamily: 'var(--font-display)', fontSize: 11,
                   color: 'var(--color-text-muted)',
+                  cursor: 'pointer', letterSpacing: '0.04em',
                 }}
-                title="Cambiar ejercicio"
               >
-                <Icon name="refresh" size={15} color="currentColor" />
+                <Icon name="refresh" size={11} color="currentColor" />
+                Cambiar ejercicio
               </button>
             )}
-            <button
-              onClick={e => { e.stopPropagation(); setShowGif(true) }}
-              style={{
-                width: 36, height: 36,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'var(--color-surface-hover)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '16px',
-                cursor: 'pointer',
-              }}
-              title="Ver tutorial"
-            >
-              🎬
-            </button>
           </div>
+
+          {/* Video button */}
+          <button
+            onClick={e => { e.stopPropagation(); setShowGif(true) }}
+            style={{
+              width: 36, height: 36, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--color-surface-hover)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '16px',
+              cursor: 'pointer',
+            }}
+            title="Ver tutorial"
+          >
+            🎬
+          </button>
         </div>
 
         {expanded && (
