@@ -112,7 +112,7 @@ export default function Cardio() {
   const selectedSession = getSessionForDate(selectedDate)
 
   return (
-    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 56px)' }}>
+    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 60px)' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>

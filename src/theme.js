@@ -3,7 +3,8 @@
 // Legacy aliases kept so existing components don't break
 
 export const cssVars = `
-  :root {
+  /* ── dark (default) ─────────────────────────── */
+  :root, [data-theme="dark"] {
     /* ── new tokens ─────────────────────────────── */
     --bg:   #0a0b0a;
     --bg-1: #0f1110;
@@ -68,6 +69,45 @@ export const cssVars = `
 
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
     --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* ── light theme ────────────────────────────── */
+  [data-theme="light"] {
+    --bg:   #f5f6f3;
+    --bg-1: #ffffff;
+    --bg-2: #eceeed;
+    --bg-3: #e0e3de;
+    --line: rgba(0,0,0,0.07);
+    --line-strong: rgba(0,0,0,0.13);
+    --ink:   #0a0b0a;
+    --ink-2: #282b26;
+    --ink-3: #6b6e68;
+    --ink-4: #9b9e98;
+
+    --hero-bg:      #0a0b0a;
+    --hero-ink:     #f4f5f3;
+    --hero-ink-2:   rgba(255,255,255,0.6);
+    --hero-ink-3:   rgba(255,255,255,0.8);
+    --hero-chip-bg: rgba(255,255,255,0.12);
+    --hero-btn-bg:  #f4f5f3;
+
+    --acc:      oklch(0.55 0.19 145);
+    --acc-deep: oklch(0.45 0.19 145);
+    --acc-soft: oklch(0.55 0.19 145 / 0.10);
+    --acc-ink:  #ffffff;
+
+    --color-bg:           var(--bg);
+    --color-surface:      var(--bg-1);
+    --color-surface-hover:var(--bg-2);
+    --color-border:       var(--line-strong);
+    --color-accent:       var(--acc);
+    --color-accent-dim:   var(--acc-soft);
+    --color-text:         var(--ink);
+    --color-text-muted:   var(--ink-3);
+    --color-text-dim:     var(--ink-4);
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
   }
 `
 

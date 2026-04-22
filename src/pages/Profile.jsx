@@ -79,7 +79,7 @@ export default function Profile() {
   const initials = (profile?.name || 'U').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
-    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 56px)' }}>
+    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 60px)' }}>
 
       {/* Header */}
       <div className="eyebrow" style={{ marginBottom: 6 }}>Cuenta</div>

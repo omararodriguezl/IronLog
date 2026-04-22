@@ -147,7 +147,7 @@ export default function Workout() {
 
   if (!activePlan) {
     return (
-      <div className="iron-in" style={{ padding: '0 20px', paddingTop: 'calc(var(--safe-top) + 56px)', textAlign: 'center' }}>
+      <div className="iron-in" style={{ padding: '0 20px', paddingTop: 'calc(var(--safe-top) + 60px)', textAlign: 'center' }}>
         <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
         <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Sin plan activo</div>
         <div style={{ fontSize: 13, color: 'var(--ink-3)' }}>Configura tu perfil para generar tu programa</div>
@@ -156,7 +156,7 @@ export default function Workout() {
   }
 
   return (
-    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 56px)' }}>
+    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 60px)' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
