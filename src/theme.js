@@ -1,90 +1,83 @@
-export const colors = {
-  background: '#0d1117',
-  surface: '#161b22',
-  surfaceHover: '#1c2128',
-  border: '#30363d',
-  accent: '#39d353',
-  accentDim: '#1a4a26',
-  danger: '#f85149',
-  warning: '#d29922',
-  text: '#e6edf3',
-  textMuted: '#8b949e',
-  textDim: '#484f58',
-}
-
-export const fonts = {
-  display: "'Oswald', sans-serif",
-  body: "'DM Mono', monospace",
-}
-
-export const spacing = {
-  xs: '4px',
-  sm: '8px',
-  md: '16px',
-  lg: '24px',
-  xl: '32px',
-  xxl: '48px',
-}
-
-export const radii = {
-  sm: '8px',
-  md: '12px',
-  lg: '16px',
-  xl: '24px',
-  full: '9999px',
-}
+// Design tokens — Iron redesign
+// New vars: --bg, --bg-1..3, --line, --ink..4, --acc, --hero-*
+// Legacy aliases kept so existing components don't break
 
 export const cssVars = `
   :root {
-    --color-bg: ${colors.background};
-    --color-surface: ${colors.surface};
-    --color-surface-hover: ${colors.surfaceHover};
-    --color-border: ${colors.border};
-    --color-accent: ${colors.accent};
-    --color-accent-dim: ${colors.accentDim};
-    --color-danger: ${colors.danger};
-    --color-warning: ${colors.warning};
-    --color-text: ${colors.text};
-    --color-text-muted: ${colors.textMuted};
-    --color-text-dim: ${colors.textDim};
-    --font-display: ${fonts.display};
-    --font-body: ${fonts.body};
-    --radius-sm: ${radii.sm};
-    --radius-md: ${radii.md};
-    --radius-lg: ${radii.lg};
-    --radius-xl: ${radii.xl};
-    --radius-full: ${radii.full};
-    --safe-top: env(safe-area-inset-top, 0px);
+    /* ── new tokens ─────────────────────────────── */
+    --bg:   #0a0b0a;
+    --bg-1: #0f1110;
+    --bg-2: #16181a;
+    --bg-3: #1d2022;
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.14);
+    --ink:   #f4f5f3;
+    --ink-2: #c8cac5;
+    --ink-3: #8a8d86;
+    --ink-4: #555853;
+
+    --hero-bg:      #f4f5f3;
+    --hero-ink:     #0a0b0a;
+    --hero-ink-2:   rgba(0,0,0,0.55);
+    --hero-ink-3:   rgba(0,0,0,0.75);
+    --hero-chip-bg: rgba(0,0,0,0.08);
+    --hero-btn-bg:  #0a0b0a;
+
+    --acc:      oklch(0.82 0.19 145);
+    --acc-deep: oklch(0.68 0.19 145);
+    --acc-soft: oklch(0.82 0.19 145 / 0.12);
+    --acc-ink:  #0a0f09;
+
+    --warn: oklch(0.82 0.15 75);
+    --cool: oklch(0.78 0.12 235);
+    --hot:  oklch(0.72 0.20 25);
+
+    --font-display: 'Geist', -apple-system, system-ui, sans-serif;
+    --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-serif:   'Instrument Serif', ui-serif, Georgia, serif;
+
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 18px;
+    --r-xl: 24px;
+
+    /* ── legacy aliases (existing components) ────── */
+    --color-bg:           var(--bg);
+    --color-surface:      var(--bg-1);
+    --color-surface-hover:var(--bg-2);
+    --color-border:       var(--line-strong);
+    --color-accent:       var(--acc);
+    --color-accent-dim:   var(--acc-soft);
+    --color-danger:       var(--hot);
+    --color-warning:      var(--warn);
+    --color-text:         var(--ink);
+    --color-text-muted:   var(--ink-3);
+    --color-text-dim:     var(--ink-4);
+    --font-body:          var(--font-mono);
+    --radius-sm:  var(--r-sm);
+    --radius-md:  var(--r-md);
+    --radius-lg:  var(--r-lg);
+    --radius-xl:  var(--r-xl);
+    --radius-full: 9999px;
+
+    --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-left: env(safe-area-inset-left, 0px);
-    --safe-right: env(safe-area-inset-right, 0px);
-    --nav-height: 64px;
+    --safe-left:   env(safe-area-inset-left, 0px);
+    --safe-right:  env(safe-area-inset-right, 0px);
+    --nav-height: 68px;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
   }
 `
 
-export const muscleGroupColors = {
-  Chest: '#f85149',
-  Back: '#388bfd',
-  Shoulders: '#d29922',
-  Biceps: '#bc8cff',
-  Triceps: '#ff7b72',
-  Legs: '#39d353',
-  Quads: '#39d353',
-  Hamstrings: '#26a641',
-  Glutes: '#2ea043',
-  Core: '#58a6ff',
-  Abs: '#58a6ff',
-  Calves: '#79c0ff',
-  Cardio: '#ff9a3c',
-}
-
 export const cardioColors = {
-  easy_run: '#39d353',
-  intervals: '#f85149',
-  tempo: '#d29922',
-  long_run: '#388bfd',
-  race: '#bc8cff',
-  rest: '#484f58',
+  easy_run: 'var(--acc)',
+  intervals: 'var(--hot)',
+  tempo: 'var(--warn)',
+  long_run: 'var(--cool)',
+  race: 'oklch(0.78 0.14 300)',
+  rest: 'var(--ink-4)',
 }
 
 export const cardioLabels = {
@@ -94,4 +87,20 @@ export const cardioLabels = {
   long_run: 'Tirada larga',
   race: 'Carrera',
   rest: 'Descanso',
+}
+
+export const muscleGroupColors = {
+  Chest: 'var(--hot)',
+  Back: 'var(--cool)',
+  Shoulders: 'var(--warn)',
+  Biceps: 'oklch(0.78 0.14 300)',
+  Triceps: 'var(--hot)',
+  Legs: 'var(--acc)',
+  Quads: 'var(--acc)',
+  Hamstrings: 'var(--acc-deep)',
+  Glutes: 'var(--acc-deep)',
+  Core: 'var(--cool)',
+  Abs: 'var(--cool)',
+  Calves: 'var(--cool)',
+  Cardio: 'var(--warn)',
 }

@@ -6,8 +6,8 @@ import FoodEntry from '../components/nutrition/FoodEntry'
 import BarcodeScanner from '../components/nutrition/BarcodeScanner'
 import PhotoAnalyzer from '../components/nutrition/PhotoAnalyzer'
 import Modal from '../components/ui/Modal'
-import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import Icon from '../components/ui/Icon'
 import { useToast } from '../components/ui/Toast'
 
 export default function Nutrition() {
@@ -17,7 +17,7 @@ export default function Nutrition() {
   const { entries, loading, addEntry, deleteEntry, getTotals, goals, updateGoals } = useNutrition(profile?.id, selectedDate)
   const toast = useToast()
 
-  const [modal, setModal] = useState(null) // null | 'method' | 'photo' | 'barcode' | 'manual' | 'goals'
+  const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [manualForm, setManualForm] = useState({ meal_name: '', calories: '', protein_g: '', carbs_g: '', fat_g: '' })
   const [errors, setErrors] = useState({})
@@ -79,46 +79,51 @@ export default function Nutrition() {
   const totals = getTotals()
 
   return (
-    <div style={{ padding: '0 16px 16px', animation: 'fadeIn 0.2s ease' }}>
-      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>Nutrición</h1>
-          <button
-            onClick={() => { setGoalsForm({ ...goals }); setModal('goals') }}
-            style={{ fontSize: '12px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em', paddingTop: '6px' }}
-          >
-            METAS →
-          </button>
-        </div>
-        {/* Date navigator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <button onClick={() => shiftDate(-1)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '30px', height: '30px', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
-          <span style={{ flex: 1, textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'var(--font-display)', textTransform: 'capitalize' }}>
+    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 56px)' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: -0.8, lineHeight: 1.1 }}>Nutrición</div>
+        <button
+          onClick={() => { setGoalsForm({ ...goals }); setModal('goals') }}
+          style={{ padding: '6px 14px', borderRadius: 999, border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--acc)', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', cursor: 'pointer', marginTop: 6 }}
+        >
+          METAS
+        </button>
+      </div>
+
+      {/* Date navigator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <button onClick={() => shiftDate(-1)} style={{ background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: 8, width: 32, height: 32, color: 'var(--ink-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon name="chevronL" size={15} />
+        </button>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink-2)', textTransform: 'capitalize' }}>
             {isToday ? 'Hoy' : new Date(selectedDate + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'short' })}
-          </span>
-          <button onClick={() => shiftDate(1)} disabled={isToday} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '30px', height: '30px', color: isToday ? 'var(--color-border)' : 'var(--color-text-muted)', cursor: isToday ? 'default' : 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
           {!isToday && (
-            <button onClick={() => setSelectedDate(todayStr)} style={{ fontSize: '11px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>HOY</button>
+            <button onClick={() => setSelectedDate(todayStr)} style={{ padding: '4px 10px', borderRadius: 999, background: 'var(--acc-soft)', border: '1px solid color-mix(in oklch, var(--acc) 30%, transparent)', color: 'var(--acc)', fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.12em', cursor: 'pointer' }}>HOY</button>
           )}
+          <button onClick={() => shiftDate(1)} disabled={isToday} style={{ background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: 8, width: 32, height: 32, color: isToday ? 'var(--ink-4)' : 'var(--ink-3)', cursor: isToday ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="chevronR" size={15} />
+          </button>
         </div>
       </div>
 
       <MacroSummary totals={totals} goals={goals} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '700', color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          Registros de hoy
-        </h2>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--color-text-dim)' }}>
-          {entries.length} entradas
-        </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, marginTop: 4 }}>
+        <span className="eyebrow">Registros del día</span>
+        <span className="eyebrow">{entries.length} entradas</span>
       </div>
 
       {entries.length === 0 && !loading && (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-dim)' }}>
-          <p style={{ fontSize: '40px', marginBottom: '8px' }}>🥗</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: '15px' }}>Sin registros hoy</p>
-          <p style={{ fontSize: '13px', marginTop: '4px' }}>Toca + para añadir tu primera comida</p>
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink-4)' }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🥗</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink-3)' }}>Sin registros</div>
+          <div style={{ fontSize: 13, marginTop: 4, color: 'var(--ink-4)' }}>Toca + para añadir tu primera comida</div>
         </div>
       )}
 
@@ -126,36 +131,32 @@ export default function Nutrition() {
         <FoodEntry key={entry.id} entry={entry} onDelete={handleDelete} />
       ))}
 
+      {/* FAB */}
       {isToday && (
         <button
           onClick={() => setModal('method')}
           style={{
             position: 'fixed',
             bottom: 'calc(var(--nav-height) + var(--safe-bottom) + 16px)',
-            right: '16px',
-            width: '56px',
-            height: '56px',
+            right: 16,
+            width: 56, height: 56,
             borderRadius: '50%',
-            background: 'var(--color-accent)',
-            color: '#0d1117',
-            fontSize: '28px',
-            fontWeight: '300',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(57,211,83,0.4)',
-            border: 'none',
+            background: 'var(--acc)',
+            color: 'var(--acc-ink)',
+            border: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 20px color-mix(in oklch, var(--acc) 40%, transparent)',
             cursor: 'pointer',
             zIndex: 50,
-            lineHeight: 1,
           }}
         >
-          +
+          <Icon name="plus" size={24} color="currentColor" stroke={2} />
         </button>
       )}
 
+      {/* Method picker modal */}
       <Modal isOpen={modal === 'method'} onClose={() => setModal(null)} title="Añadir comida">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <MethodButton icon="📷" title="Analizar foto con IA" desc="Claude identifica los alimentos y calcula macros" onClick={() => setModal('photo')} />
           <MethodButton icon="📦" title="Escanear código de barras" desc="Busca en Open Food Facts" onClick={() => setModal('barcode')} />
           <MethodButton icon="✏️" title="Entrada manual" desc="Introduce los valores directamente" onClick={() => setModal('manual')} />
@@ -163,37 +164,36 @@ export default function Nutrition() {
       </Modal>
 
       <Modal isOpen={modal === 'photo'} onClose={() => setModal(null)} title="Análisis de foto">
-        <PhotoAnalyzer
-          onConfirm={handleAdd}
-          onClose={() => setModal(null)}
-        />
+        <PhotoAnalyzer onConfirm={handleAdd} onClose={() => setModal(null)} />
       </Modal>
 
       <Modal isOpen={modal === 'barcode'} onClose={() => setModal(null)} title="Escáner de código de barras">
-        <BarcodeScanner
-          onConfirm={handleAdd}
-          onClose={() => setModal(null)}
-        />
+        <BarcodeScanner onConfirm={handleAdd} onClose={() => setModal(null)} />
       </Modal>
 
+      {/* Goals modal */}
       <Modal isOpen={modal === 'goals'} onClose={() => setModal(null)} title="Editar metas">
         {goalsForm && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Input label="Calorías (kcal)" type="number" inputMode="numeric" value={goalsForm.calories} onChange={e => setGoalsForm(f => ({ ...f, calories: parseInt(e.target.value) || 0 }))} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
               <Input label="Proteína (g)" type="number" inputMode="numeric" value={goalsForm.protein_g} onChange={e => setGoalsForm(f => ({ ...f, protein_g: parseInt(e.target.value) || 0 }))} />
               <Input label="Carbos (g)" type="number" inputMode="numeric" value={goalsForm.carbs_g} onChange={e => setGoalsForm(f => ({ ...f, carbs_g: parseInt(e.target.value) || 0 }))} />
               <Input label="Grasa (g)" type="number" inputMode="numeric" value={goalsForm.fat_g} onChange={e => setGoalsForm(f => ({ ...f, fat_g: parseInt(e.target.value) || 0 }))} />
             </div>
-            <Button onClick={() => { updateGoals(goalsForm); setModal(null); toast.success('Metas actualizadas') }}>
+            <button
+              onClick={() => { updateGoals(goalsForm); setModal(null); toast.success('Metas actualizadas') }}
+              style={{ width: '100%', height: 50, borderRadius: 14, background: 'var(--acc)', color: 'var(--acc-ink)', border: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+            >
               Guardar metas
-            </Button>
+            </button>
           </div>
         )}
       </Modal>
 
+      {/* Manual entry modal */}
       <Modal isOpen={modal === 'manual'} onClose={() => setModal(null)} title="Entrada manual">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input
             label="Nombre del alimento"
             placeholder="Ej: Pollo a la plancha"
@@ -210,33 +210,18 @@ export default function Nutrition() {
             onChange={e => setManualForm(f => ({ ...f, calories: e.target.value }))}
             error={errors.calories}
           />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-            <Input
-              label="Proteína (g)"
-              type="number"
-              inputMode="decimal"
-              placeholder="0"
-              value={manualForm.protein_g}
-              onChange={e => setManualForm(f => ({ ...f, protein_g: e.target.value }))}
-            />
-            <Input
-              label="Carbos (g)"
-              type="number"
-              inputMode="decimal"
-              placeholder="0"
-              value={manualForm.carbs_g}
-              onChange={e => setManualForm(f => ({ ...f, carbs_g: e.target.value }))}
-            />
-            <Input
-              label="Grasa (g)"
-              type="number"
-              inputMode="decimal"
-              placeholder="0"
-              value={manualForm.fat_g}
-              onChange={e => setManualForm(f => ({ ...f, fat_g: e.target.value }))}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+            <Input label="Proteína (g)" type="number" inputMode="decimal" placeholder="0" value={manualForm.protein_g} onChange={e => setManualForm(f => ({ ...f, protein_g: e.target.value }))} />
+            <Input label="Carbos (g)" type="number" inputMode="decimal" placeholder="0" value={manualForm.carbs_g} onChange={e => setManualForm(f => ({ ...f, carbs_g: e.target.value }))} />
+            <Input label="Grasa (g)" type="number" inputMode="decimal" placeholder="0" value={manualForm.fat_g} onChange={e => setManualForm(f => ({ ...f, fat_g: e.target.value }))} />
           </div>
-          <Button onClick={handleManualSubmit} loading={saving}>Guardar</Button>
+          <button
+            onClick={handleManualSubmit}
+            disabled={saving}
+            style={{ width: '100%', height: 50, borderRadius: 14, background: 'var(--acc)', color: 'var(--acc-ink)', border: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1 }}
+          >
+            {saving ? 'Guardando…' : 'Guardar'}
+          </button>
         </div>
       </Modal>
     </div>
@@ -247,24 +232,13 @@ function MethodButton({ icon, title, desc, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '14px',
-        padding: '16px',
-        background: 'var(--color-surface-hover)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border)',
-        cursor: 'pointer',
-        transition: 'border-color 0.15s ease',
-      }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+      className="card"
+      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', cursor: 'pointer' }}
     >
-      <span style={{ fontSize: '28px' }}>{icon}</span>
+      <span style={{ fontSize: 26 }}>{icon}</span>
       <div>
-        <p style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: '600' }}>{title}</p>
-        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{desc}</p>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{title}</div>
+        <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 2 }}>{desc}</div>
       </div>
     </div>
   )

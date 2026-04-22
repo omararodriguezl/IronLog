@@ -4,11 +4,9 @@ import { useCardio } from '../hooks/useCardio'
 import { parseCardioPDF } from '../lib/claude'
 import CardioCalendar from '../components/cardio/CardioCalendar'
 import CardioDay from '../components/cardio/CardioDay'
-import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
-import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
-import Spinner from '../components/ui/Spinner'
+import Icon from '../components/ui/Icon'
 import { useToast } from '../components/ui/Toast'
 import { cardioLabels } from '../theme'
 
@@ -21,7 +19,7 @@ export default function Cardio() {
 
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [weekOffset, setWeekOffset] = useState(0)
-  const [modal, setModal] = useState(null) // null | 'add' | 'pdf'
+  const [modal, setModal] = useState(null)
   const [editingSession, setEditingSession] = useState(null)
   const [pdfParsing, setPdfParsing] = useState(false)
 
@@ -114,70 +112,49 @@ export default function Cardio() {
   const selectedSession = getSessionForDate(selectedDate)
 
   return (
-    <div style={{ padding: '0 16px 16px', animation: 'fadeIn 0.2s ease' }}>
-      <div style={{ paddingTop: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '700' }}>
-            Cardio
-          </h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => setModal('pdf')}
-              style={{
-                padding: '8px 12px',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                color: 'var(--color-text-muted)',
-                fontFamily: 'var(--font-display)',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                letterSpacing: '0.04em',
-              }}
-            >
-              📄 PDF
-            </button>
-            <button
-              onClick={() => openAdd(null)}
-              style={{
-                padding: '8px 16px',
-                background: 'var(--color-accent)',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                color: '#0d1117',
-                fontFamily: 'var(--font-display)',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                letterSpacing: '0.04em',
-              }}
-            >
-              + Añadir
-            </button>
-          </div>
+    <div className="iron-in" style={{ padding: '0 20px 32px', paddingTop: 'calc(var(--safe-top) + 56px)' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: -0.8, lineHeight: 1.1 }}>Cardio</div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+          <button
+            onClick={() => setModal('pdf')}
+            style={{ padding: '6px 12px', background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: 8, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Icon name="pdf" size={13} color="var(--ink-3)" />
+            PDF
+          </button>
+          <button
+            onClick={() => openAdd(null)}
+            style={{ padding: '6px 14px', background: 'var(--acc)', border: 0, borderRadius: 8, color: 'var(--acc-ink)', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Icon name="plus" size={13} color="currentColor" stroke={2} />
+            AÑADIR
+          </button>
         </div>
       </div>
 
-      <Card style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+      {/* Week strip */}
+      <div className="card" style={{ marginBottom: 16, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <button
             onClick={() => setWeekOffset(w => w - 1)}
-            style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: '36px', height: '36px', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: 8, width: 34, height: 34, color: 'var(--ink-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            ←
+            <Icon name="chevronL" size={15} />
           </button>
           <button
             onClick={() => setWeekOffset(0)}
-            style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontFamily: 'var(--font-display)', fontSize: '13px', cursor: 'pointer', letterSpacing: '0.04em' }}
+            style={{ background: 'none', border: 'none', color: weekOffset === 0 ? 'var(--acc)' : 'var(--ink-3)', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', cursor: 'pointer' }}
           >
-            {weekOffset === 0 ? 'ESTA SEMANA' : weekOffset > 0 ? `+${weekOffset} sem` : `${weekOffset} sem`}
+            {weekOffset === 0 ? 'ESTA SEMANA' : weekOffset > 0 ? `+${weekOffset} SEM` : `${weekOffset} SEM`}
           </button>
           <button
             onClick={() => setWeekOffset(w => w + 1)}
-            style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: '36px', height: '36px', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: 8, width: 34, height: 34, color: 'var(--ink-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            →
+            <Icon name="chevronR" size={15} />
           </button>
         </div>
         <CardioCalendar
@@ -185,20 +162,14 @@ export default function Cardio() {
           onDayClick={handleDayClick}
           selectedWeek={weekOffset}
         />
-      </Card>
+      </div>
 
+      {/* Selected day detail */}
       {selectedDate && (
         <div>
-          <p style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '13px',
-            color: 'var(--color-text-muted)',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            marginBottom: '10px',
-          }}>
+          <div className="eyebrow" style={{ marginBottom: 10, textTransform: 'capitalize' }}>
             {new Date(selectedDate + 'T00:00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+          </div>
           <CardioDay
             session={selectedSession}
             date={selectedDate}
@@ -209,8 +180,9 @@ export default function Cardio() {
         </div>
       )}
 
+      {/* Add/Edit modal */}
       <Modal isOpen={modal === 'add'} onClose={() => setModal(null)} title={editingSession ? 'Editar sesión' : 'Nueva sesión de cardio'}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input
             label="Fecha"
             type="date"
@@ -218,25 +190,22 @@ export default function Cardio() {
             onChange={e => setF('date', e.target.value)}
           />
           <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '6px' }}>
-              Tipo de sesión
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div className="eyebrow" style={{ marginBottom: 8 }}>Tipo de sesión</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {SESSION_TYPES.map(type => (
                 <button
                   key={type}
                   onClick={() => setF('session_type', type)}
                   style={{
                     padding: '10px',
-                    borderRadius: 'var(--radius-md)',
-                    border: `1px solid ${form.session_type === type ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    background: form.session_type === type ? 'var(--color-accent-dim)' : 'var(--color-surface)',
-                    color: form.session_type === type ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '12px',
-                    fontWeight: '600',
+                    borderRadius: 10,
+                    border: `1px solid ${form.session_type === type ? 'color-mix(in oklch, var(--acc) 40%, transparent)' : 'var(--line)'}`,
+                    background: form.session_type === type ? 'var(--acc-soft)' : 'var(--bg-2)',
+                    color: form.session_type === type ? 'var(--acc)' : 'var(--ink-3)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    letterSpacing: '0.06em',
                     cursor: 'pointer',
-                    letterSpacing: '0.04em',
                     textAlign: 'center',
                   }}
                 >
@@ -261,49 +230,45 @@ export default function Cardio() {
             value={form.description}
             onChange={e => setF('description', e.target.value)}
           />
-          <Button onClick={handleSave}>
+          <button
+            onClick={handleSave}
+            style={{ width: '100%', height: 50, borderRadius: 14, background: 'var(--acc)', color: 'var(--acc-ink)', border: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+          >
             {editingSession ? 'Actualizar' : 'Guardar sesión'}
-          </Button>
+          </button>
         </div>
       </Modal>
 
+      {/* PDF import modal */}
       <Modal isOpen={modal === 'pdf'} onClose={() => setModal(null)} title="Importar plan desde PDF">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ fontSize: 14, color: 'var(--ink-3)', lineHeight: 1.6 }}>
             Sube un PDF con tu plan de cardio. Claude extraerá las fechas, tipos de sesión y distancias automáticamente.
-          </p>
+          </div>
 
           {pdfParsing ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '24px 0' }}>
-              <Spinner size={40} />
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Procesando PDF con IA…</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '24px 0' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid var(--line)', borderTopColor: 'var(--acc)', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ color: 'var(--ink-3)', fontSize: 14 }}>Procesando PDF con IA…</div>
             </div>
           ) : (
             <label style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '32px',
-              border: '2px dashed var(--color-border)',
-              borderRadius: 'var(--radius-lg)',
-              cursor: 'pointer',
-              textAlign: 'center',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+              padding: '32px', border: '2px dashed var(--line-strong)', borderRadius: 14,
+              cursor: 'pointer', textAlign: 'center',
             }}>
-              <span style={{ fontSize: '40px' }}>📄</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: '600' }}>
-                Subir archivo PDF o TXT
-              </span>
-              <input
-                type="file"
-                accept=".pdf,.txt"
-                style={{ display: 'none' }}
-                onChange={e => handlePdfUpload(e.target.files[0])}
-              />
+              <Icon name="pdf" size={40} color="var(--ink-4)" />
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink-2)' }}>Subir archivo PDF o TXT</div>
+              <input type="file" accept=".pdf,.txt" style={{ display: 'none' }} onChange={e => handlePdfUpload(e.target.files[0])} />
             </label>
           )}
 
-          <Button variant="ghost" onClick={() => setModal(null)}>Cancelar</Button>
+          <button
+            onClick={() => setModal(null)}
+            style={{ width: '100%', height: 46, borderRadius: 12, background: 'var(--bg-2)', color: 'var(--ink-3)', border: '1px solid var(--line)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Cancelar
+          </button>
         </div>
       </Modal>
     </div>
