@@ -8,7 +8,7 @@ import { useToast } from '../components/ui/Toast'
 
 export default function Workout() {
   const { profile } = useAuth()
-  const { activePlan, sessions, saveSession, deleteSession, deleteAllSessions, updateCurrentWeek, getCurrentWeekData, loading } = useWorkout(profile?.id)
+  const { activePlan, sessions, saveSession, deleteSession, deleteAllSessions, updateCurrentWeek, swapExercise, getCurrentWeekData, loading } = useWorkout(profile?.id)
   const { analyze } = useCoach(profile?.id)
   const toast = useToast()
 
@@ -280,6 +280,8 @@ export default function Workout() {
           exercise={exercise}
           useKg={useKg}
           onSetsUpdate={handleSetsUpdate}
+          profile={profile}
+          onSwap={newEx => swapExercise(activePlan.id, currentDay.day_label, exercise.id, newEx).catch(err => toast.error('Error: ' + err.message))}
         />
       ))}
 

@@ -82,6 +82,21 @@ export function useWorkout(userId) {
     setSessions([])
   }
 
+  async function swapExercise(planId, dayLabel, exerciseId, newExerciseData) {
+    const updated = JSON.parse(JSON.stringify(activePlan.plan_json))
+    const day = updated.days?.find(d => d.day_label === dayLabel)
+    if (!day) throw new Error('Día no encontrado')
+    const idx = day.exercises.findIndex(e => e.id === exerciseId)
+    if (idx < 0) throw new Error('Ejercicio no encontrado')
+    day.exercises[idx] = { ...day.exercises[idx], ...newExerciseData, id: exerciseId }
+    const { error } = await supabase
+      .from('workout_plans')
+      .update({ plan_json: updated })
+      .eq('id', planId)
+    if (error) throw error
+    setActivePlan(prev => prev ? { ...prev, plan_json: updated } : prev)
+  }
+
   async function updateCurrentWeek(planId, week) {
     const { error } = await supabase
       .from('workout_plans')
@@ -131,6 +146,7 @@ export function useWorkout(userId) {
     deleteSession,
     deleteAllSessions,
     updateCurrentWeek,
+    swapExercise,
     getTodaysSession,
     getCurrentWeekData,
     reload: loadActivePlan,

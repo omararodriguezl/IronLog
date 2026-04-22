@@ -215,6 +215,51 @@ Proporciona:
   })
 }
 
+export async function suggestExerciseAlternatives(exercise, profile) {
+  const equipmentMap = {
+    full_gym: 'gimnasio completo con máquinas, barras y mancuernas',
+    dumbbells_bar: 'mancuernas y barra, sin máquinas',
+    dumbbells: 'solo mancuernas',
+    bodyweight: 'solo peso corporal, sin equipamiento',
+  }
+
+  const text = await callClaude({
+    messages: [{
+      role: 'user',
+      content: `Sugiere 3 ejercicios alternativos para reemplazar "${exercise.name}" (grupo muscular: ${exercise.muscle_group}).
+
+Perfil: objetivo=${profile?.goal || 'volumen'}, nivel=${profile?.level || 'intermediate'}, equipamiento=${equipmentMap[profile?.equipment] || 'gimnasio completo'}
+
+Reglas:
+- Mismo grupo muscular: ${exercise.muscle_group}
+- Compatible con el equipamiento disponible
+- Mantener el mismo número de series (${exercise.sets}) y rango de reps similar (${exercise.reps})
+- Nombres en español, english_name en inglés
+- Tip máximo 6 palabras
+
+Devuelve SOLO este JSON array sin texto adicional:
+[
+  {
+    "name": "Nombre en español",
+    "english_name": "English Name",
+    "muscle_group": "${exercise.muscle_group}",
+    "sets": ${exercise.sets},
+    "reps": "${exercise.reps}",
+    "rest_seconds": ${exercise.rest_seconds || 90},
+    "tip": "Cue técnico breve"
+  }
+]`,
+    }],
+    maxTokens: 1024,
+    system: 'You are a world-class strength coach. Respond with valid JSON only, no markdown, no extra text.',
+  })
+
+  const start = text.indexOf('[')
+  const end = text.lastIndexOf(']')
+  if (start === -1 || end === -1) throw new Error('Respuesta inválida de Claude')
+  return JSON.parse(text.slice(start, end + 1))
+}
+
 export async function parseCardioPDF(base64Data, mediaType = 'application/pdf') {
   const system = `You are a running coach assistant. Always respond with valid JSON only, no markdown, no explanation.`
 

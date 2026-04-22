@@ -3,12 +3,15 @@ import Card from '../ui/Card'
 import SetLogger from './SetLogger'
 import RestTimer from './RestTimer'
 import GifModal from './GifModal'
+import ExerciseSwapSheet from './ExerciseSwapSheet'
+import Icon from '../ui/Icon'
 import { muscleGroupColors } from '../../theme'
 
-export default function ExerciseCard({ exercise, useKg, onSetsUpdate }) {
+export default function ExerciseCard({ exercise, useKg, onSetsUpdate, onSwap, profile }) {
   const [loggedSets, setLoggedSets] = useState([])
   const [showTimer, setShowTimer] = useState(false)
   const [showGif, setShowGif] = useState(false)
+  const [showSwap, setShowSwap] = useState(false)
   const [expanded, setExpanded] = useState(true)
 
   const muscleColor = muscleGroupColors[exercise.muscle_group] || 'var(--color-text-muted)'
@@ -78,24 +81,42 @@ export default function ExerciseCard({ exercise, useKg, onSetsUpdate }) {
               </p>
             )}
           </div>
-          <button
-            onClick={e => { e.stopPropagation(); setShowGif(true) }}
-            style={{
-              width: '36px',
-              height: '36px',
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--color-surface-hover)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '16px',
-              cursor: 'pointer',
-            }}
-          >
-            🎬
-          </button>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            {onSwap && (
+              <button
+                onClick={e => { e.stopPropagation(); setShowSwap(true) }}
+                style={{
+                  width: 36, height: 36,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--color-surface-hover)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-muted)',
+                }}
+                title="Cambiar ejercicio"
+              >
+                <Icon name="refresh" size={15} color="currentColor" />
+              </button>
+            )}
+            <button
+              onClick={e => { e.stopPropagation(); setShowGif(true) }}
+              style={{
+                width: 36, height: 36,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--color-surface-hover)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '16px',
+                cursor: 'pointer',
+              }}
+              title="Ver tutorial"
+            >
+              🎬
+            </button>
+          </div>
         </div>
 
         {expanded && (
@@ -150,6 +171,15 @@ export default function ExerciseCard({ exercise, useKg, onSetsUpdate }) {
         exercise={showGif ? exercise : null}
         onClose={() => setShowGif(false)}
       />
+
+      {showSwap && (
+        <ExerciseSwapSheet
+          exercise={exercise}
+          profile={profile}
+          onSwap={onSwap}
+          onClose={() => setShowSwap(false)}
+        />
+      )}
     </>
   )
 }

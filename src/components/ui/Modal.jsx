@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Modal({ isOpen, onClose, title, children, fullscreen }) {
   useEffect(() => {
@@ -12,7 +13,7 @@ export default function Modal({ isOpen, onClose, title, children, fullscreen }) 
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
@@ -88,6 +89,7 @@ export default function Modal({ isOpen, onClose, title, children, fullscreen }) 
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
